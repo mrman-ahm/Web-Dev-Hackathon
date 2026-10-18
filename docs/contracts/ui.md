@@ -31,8 +31,8 @@ type PipelineTotals = {visibility:'visible';stages:PipelineStageValue[]}
   |{visibility:'restricted'};
 type DashboardSnapshot = {scope:'personal'|'company';workspaceId:string;asOf:string;
   timezone:string;metrics:DashboardMetric[];openPipelineByStage:PipelineTotals;
-  upcomingAppointments:AppointmentSummary[];collections:{grossPayments:MoneyTotal[];
-  confirmedRefunds:MoneyTotal[];netCollected:MoneyTotal[]}};
+  upcomingAppointments:AppointmentSummary[];collections:{visibility:'visible';grossPayments:MoneyTotal[];
+  confirmedRefunds:MoneyTotal[];netCollected:MoneyTotal[]}|{visibility:'restricted'}};
 type AppointmentSummary = {id:string;contactName:string;employeeName:string;
   startsAt:string;endsAt:string;timezone:string;status:string};
 type ContactSummary = {id:string;name:string;companyName:string|null;ownerName:string|null};
