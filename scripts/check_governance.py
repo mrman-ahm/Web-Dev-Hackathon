@@ -145,4 +145,4 @@ if ERRORS:
         print(f'ERROR: {error}', file=sys.stderr)
     sys.exit(1)
 print(f'PASS: {len(REQUIRED)} required files; {markdown_count} Markdown files; 3 issue forms; CI policy; text/credential checks')
-print('Source DOCX:', 'present' if (ROOT / 'problem statement.docx').exists() else 'not in this checkout (see source register)')
+print('Official source DOCX:', 'versioned copy present' if (ROOT / 'docs/requirements/problem-statement.docx').exists() else 'see source register')

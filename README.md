@@ -7,9 +7,11 @@ with automatic escalation or recovery when ignored**.
 
 ## Status and source
 
-Foundation A establishes repository governance. There is no application,
+Foundation A establishes repository governance. Foundation B is an architecture proposal
+for human review; see [architecture](docs/architecture.md),
+[traceability](docs/requirements/traceability.md) and [decisions](docs/decisions/README.md). There is no application,
 database schema, installed product dependency, deployment, or working integration yet.
-The authoritative source is the locally supplied `problem statement.docx`, titled
+The authoritative source is the versioned [problem statement](docs/requirements/problem-statement.docx), titled
 *Unified Business Management Platform: Problem Statement*. See the
 [source register](docs/requirements/README.md) for its fingerprint, availability,
 and ambiguities. Policies are distinguished from enforced repository settings in
@@ -43,7 +45,7 @@ Developer 1 is the primary technical lead (approximately 75–80% responsibility
 owning core domains, security, database, automation, integrations, and final integration.
 Developer 2 owns independent UI foundations and explicitly assigned peripheral work
 (approximately 20–25%). Human decisions govern; the supervisor coordinates and reviews.
-GitHub account-to-lane mapping is pending: see [ownership](docs/ownership.md).
+The primary human confirmed `mrman-ahm` currently handles both lanes; see [ownership](docs/ownership.md).
 
 - [AGENTS.md](AGENTS.md): shared coding-agent entrypoint.
 - [GEMINI.md](GEMINI.md): Developer 2 entrypoint, importing shared instructions.

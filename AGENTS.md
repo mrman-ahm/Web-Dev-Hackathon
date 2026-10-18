@@ -63,8 +63,9 @@ Use the issue for scope/dependencies, repository contracts for interfaces, PR fo
 changes/evidence, and decisions for accepted rationale. No duplicate progress ledger.
 Each completion report/PR states summary, files/modules changed, contract/migration
 changes (or none), tests and outcomes, requirement IDs, limitations, open blockers,
-and the next owner/action. Sensitive and cross-domain PRs require the other human's
-review. Never self-approve or merge without authorized human approval and green checks.
+and the next owner/action. Current staffing: `mrman-ahm` handles both lanes; see the current approval rules in
+[ownership](docs/ownership.md). Agent-produced PRs need primary human review; never
+claim a second developer or independent human review when none occurred. Never self-approve or merge without authorized human approval and green checks.
 For resets, follow [documentation recovery](docs/documentation.md).
 
 ## Agent Efficiency & Tool-Call Discipline
