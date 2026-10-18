@@ -205,6 +205,7 @@ const SmsEventIdentityV1Schema = z.strictObject({
  providerMessageRef: ProviderReferenceV1Schema,
  /** This is the SMS batch reference, never the per-message reference. */
  providerBatchRef: ProviderReferenceV1Schema.nullable(),
+ /** For Textbee inbound events, this maps to receivedAt, not webhook arrival time. */
  occurredAt: InstantSchema.nullable(),
 });
 
@@ -237,6 +238,7 @@ export const SmsWebhookEventV1Schema = z.discriminatedUnion('kind', [
   ...SmsEventIdentityV1Schema.shape,
   kind: z.literal('message.unknown'),
   recipient: PhoneE164Schema,
+  /** Preserve the provider's original status (for example delivery_failed). */
   providerState: z.string().trim().min(1).max(100),
  }),
 ]);
@@ -252,9 +254,59 @@ export interface SmsAdapterV1<Credentials> {
 export const SafepayCredentialsV1Schema = z.strictObject({
  merchantApiKey: z.string().min(1),
  merchantSecret: z.string().min(1),
+ webhookSigningSecret: z.string().min(1),
  environment: z.literal('sandbox'),
 });
 export type SafepayCredentialsV1 = z.infer<typeof SafepayCredentialsV1Schema>;
+
+const SafepayTimestampV1Schema = z.object({
+ seconds: z.number().int().nonnegative().safe(),
+ nanos: z.number().int().nonnegative().max(999_999_999).optional(),
+}).passthrough();
+const SafepayWebhookEnvelopeV1Schema = {
+ token: ProviderReferenceV1Schema,
+ version: z.literal('2.0.0'),
+ merchant_api_key: z.string().min(1),
+ endpoint: z.url(),
+ created_at: SafepayTimestampV1Schema,
+};
+
+/** Official Safepay merchant webhook shapes. The top-level `token` is the event
+ * identity; `data.tracker` identifies the checkout tracker, not a payment. */
+export const SafepayWebhookPayloadV1Schema = z.discriminatedUnion('type', [
+ z.object({
+  ...SafepayWebhookEnvelopeV1Schema,
+  type: z.literal('payment.succeeded'),
+  data: z.object({
+   tracker: ProviderReferenceV1Schema,
+   intent: z.string().min(1),
+   state: z.string().min(1),
+   net: z.number().int().nonnegative().safe(),
+   fee: z.number().int().nonnegative().safe(),
+   customer_email: z.email().optional(),
+   amount: z.number().int().positive().safe(),
+   currency: CurrencySchema,
+   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+   charged_at: SafepayTimestampV1Schema,
+  }).passthrough(),
+ }).passthrough(),
+ z.object({
+  ...SafepayWebhookEnvelopeV1Schema,
+  type: z.literal('payment.refunded'),
+  data: z.object({
+   tracker: ProviderReferenceV1Schema,
+   intent: z.string().min(1),
+   state: z.string().min(1),
+   customer_email: z.email().optional(),
+   balance: z.number().int().nonnegative().safe(),
+   currency: CurrencySchema,
+   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+   refund_amount: z.number().int().positive().safe(),
+   refunded_at: SafepayTimestampV1Schema,
+  }).passthrough(),
+ }).passthrough(),
+]);
+export type SafepayWebhookPayloadV1 = z.infer<typeof SafepayWebhookPayloadV1Schema>;
 
 /** Safepay sandbox POST /order/payments/v3 tracker-create wire payload. Provider
  * integer minor units are required and must be positive; no currency defaults. */
@@ -294,9 +346,10 @@ export type SafepayCheckoutCommandV1 = z.infer<typeof SafepayCheckoutCommandV1Sc
 export const SafepayCheckoutSessionV1Schema = z.strictObject({
  /** Safepay track_* token; it is not a captured-payment reference. */
  providerTrackerRef: ProviderReferenceV1Schema,
- checkoutUrl: HttpsUrlSchema.nullable(),
- /** Safepay supplies no universal tracker expiry; keep it absent as null. */
- expiresAt: InstantSchema.nullable(),
+ checkoutUrl: HttpsUrlSchema,
+ /** Keep provider-confirmed expiry separate from any application policy deadline. */
+ providerExpiresAt: InstantSchema.nullable(),
+ applicationPolicyExpiresAt: InstantSchema.nullable(),
 });
 export type SafepayCheckoutSessionV1 = z.infer<typeof SafepayCheckoutSessionV1Schema>;
 
@@ -305,7 +358,7 @@ const SafepayEventBaseV1Schema = z.strictObject({
  providerEventId: ProviderReferenceV1Schema,
  /** Some Safepay facts do not include an event timestamp; do not synthesize one. */
  occurredAt: InstantSchema.nullable(),
- providerTrackerRef: ProviderReferenceV1Schema.nullable(),
+ providerTrackerRef: ProviderReferenceV1Schema,
  metadata: UntrustedProviderMetadataV1Schema,
 });
 
@@ -313,7 +366,7 @@ export const SafepayPaymentEventV1Schema = z.discriminatedUnion('kind', [
  z.strictObject({
   ...SafepayEventBaseV1Schema.shape,
   kind: z.literal('payment.confirmed'),
-  providerPaymentRef: ProviderReferenceV1Schema,
+  providerPaymentRef: ProviderReferenceV1Schema.nullable(),
   money: PositiveMoneyV1Schema,
  }),
  z.strictObject({
@@ -330,7 +383,7 @@ export const SafepayPaymentEventV1Schema = z.discriminatedUnion('kind', [
  z.strictObject({
   ...SafepayEventBaseV1Schema.shape,
   kind: z.literal('refund.confirmed'),
-  providerPaymentRef: ProviderReferenceV1Schema,
+  providerPaymentRef: ProviderReferenceV1Schema.nullable(),
   /** Provider refund IDs are not present in every Safepay refund response. */
   providerRefundRef: ProviderReferenceV1Schema.nullable(),
   money: PositiveMoneyV1Schema,
