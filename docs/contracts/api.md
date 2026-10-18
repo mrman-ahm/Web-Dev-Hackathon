@@ -165,7 +165,7 @@ is an additional guard. Read grants have own/all record scope as specified in se
 | PUT/DELETE `/integrations/:provider` | provider-specific write-only credentials/config; V | IntegrationDto | integrations.manage; never echo credentials; audit changes |
 | PUT `/notifications/destination` | chatId + enabled | masked destination/status | notifications.destination.manage_own + own membership; verification required |
 | GET `/notification-deliveries` | status/cursor | redacted delivery DTO | notifications.failures.view for admin visibility |
-| GET `/audit` | eventType/actor/from/to/cursor | AuditDto[] | audit.view and field masking; no audit write/delete routes |
+| GET `/audit` | `eventType`; `actor` = workspace membership ID; inclusive UTC `from`/`to`; opaque descending cursor; `limit` 1–100 (default 25) | Paginated AuditDto[] | `audit.view` and `crm.values.view` field masking; metadata-only direct table access; no audit write/delete routes |
 
 Provider-specific public endpoints:
 `POST /api/webhooks/twilio/:endpointId/messages`, `/status`, and

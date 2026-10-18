@@ -24,6 +24,7 @@ export const PaymentDtoSchema=VersionedSchema.extend({opportunityId:IdSchema,con
 export const AppointmentDtoSchema=VersionedSchema.extend({contactId:IdSchema,opportunityId:IdSchema.nullable(),employeeMembershipId:IdSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,state:z.enum(['pending','confirmed','rescheduling','cancelling','cancelled','failed','conflict']),providerReference:z.string().nullable()}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt),'Appointment end must follow start');
 export const IntegrationDtoSchema=VersionedSchema.extend({provider:ProviderSchema,membershipId:IdSchema.nullable(),status:z.enum(['disconnected','connected','error','reconnect_required']),lastSuccessAt:InstantSchema.nullable(),lastError:z.strictObject({code:z.string(),message:z.string()}).nullable(),limits:z.array(z.string())});
 export const AuditDtoSchema=z.strictObject({id:IdSchema,eventType:NonemptySchema,actor:z.strictObject({kind:z.enum(['user','system','provider']),displayName:z.string().nullable()}),target:z.strictObject({type:NonemptySchema,id:IdSchema}),occurredAt:InstantSchema,before:z.record(z.string(),z.unknown()).nullable(),after:z.record(z.string(),z.unknown()).nullable()});
+export const AuditQuerySchema=z.strictObject({eventType:z.string().trim().min(1).max(128).optional(),actor:IdSchema.optional(),from:InstantSchema.optional(),to:InstantSchema.optional(),cursor:z.string().min(1).max(512).optional(),limit:z.coerce.number().int().min(1).max(100).default(25)}).superRefine((query,ctx)=>{if(query.from&&query.to&&Date.parse(query.from)>Date.parse(query.to))ctx.addIssue({code:'custom',path:['to'],message:'End instant must not be before start instant'});});
 export const SignupInputSchema=z.strictObject({email:z.email().max(254),password:z.string().min(12).max(128),displayName:z.string().trim().min(1).max(120),workspaceName:z.string().trim().min(1).max(120),timezone:TimezoneSchema,defaultCurrency:CurrencySchema});
 export const LoginInputSchema=z.strictObject({email:z.email().max(254),password:z.string().min(1).max(128)});
 export const LogoutInputSchema=z.strictObject({scope:z.enum(['local','global']).default('local')});
@@ -56,6 +57,7 @@ export type PaymentDto=z.infer<typeof PaymentDtoSchema>;
 export type AppointmentDto=z.infer<typeof AppointmentDtoSchema>;
 export type IntegrationDto=z.infer<typeof IntegrationDtoSchema>;
 export type AuditDto=z.infer<typeof AuditDtoSchema>;
+export type AuditQuery=z.infer<typeof AuditQuerySchema>;
 export type SignupInput=z.infer<typeof SignupInputSchema>;
 export type LoginInput=z.infer<typeof LoginInputSchema>;
 export type UpdateWorkspaceInput=z.infer<typeof UpdateWorkspaceInputSchema>;
