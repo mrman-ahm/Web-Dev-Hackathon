@@ -3,6 +3,33 @@ import { expect, test } from '@playwright/test';
 
 const localSupabase = /^http:\/\/(localhost|127\.0\.0\.1):54321\/?$/.test(process.env.SUPABASE_URL ?? '');
 
+function decodeSessionCookie(value: string): Record<string, unknown> {
+  const json = value.startsWith('base64-')
+    ? Buffer.from(value.slice('base64-'.length), 'base64url').toString('utf8')
+    : decodeURIComponent(value);
+  const parsed: unknown = JSON.parse(json);
+  if (typeof parsed !== 'object' || parsed === null) throw new Error('Unexpected Supabase session cookie.');
+  return parsed as Record<string, unknown>;
+}
+
+function encodeSessionCookie(session: Record<string, unknown>): string {
+  return `base64-${Buffer.from(JSON.stringify(session), 'utf8').toString('base64url')}`;
+}
+
+function authSessionCookie(cookies: Array<{ name: string; value: string }>) {
+  const candidate = cookies.find((cookie) => /^sb-.+-auth-token(?:\.\d+)?$/.test(cookie.name));
+  if (!candidate) return undefined;
+  const name = candidate.name.replace(/\.\d+$/, '');
+  const parts = cookies
+    .filter((cookie) => cookie.name === name || /^\d+$/.test(cookie.name.slice(name.length + 1)) && cookie.name.startsWith(`${name}.`))
+    .sort((left, right) => {
+      const leftIndex = left.name === name ? -1 : Number(left.name.slice(name.length + 1));
+      const rightIndex = right.name === name ? -1 : Number(right.name.slice(name.length + 1));
+      return leftIndex - rightIndex;
+    });
+  return { name, value: parts.map((part) => part.value).join('') };
+}
+
 test('mobile signup, workspace settings and login follow persisted Auth state', async ({ page }) => {
   test.setTimeout(60_000);
   test.skip(!localSupabase, 'This acceptance test writes only to the dedicated local Supabase project.');
@@ -25,6 +52,43 @@ test('mobile signup, workspace settings and login follow persisted Auth state', 
   expect(signupResponse.status()).toBe(200);
 
   await page.waitForURL(/\/workspaces\/[0-9a-f-]+\/settings$/, { timeout: 30_000 });
+  const cookies = await page.context().cookies();
+  const authCookie = authSessionCookie(cookies);
+  expect(authCookie).toBeDefined();
+  if (!authCookie) throw new Error('Auth session cookie was not set.');
+  const expiredSession = decodeSessionCookie(authCookie.value);
+  const originalRefreshToken = expiredSession.refresh_token;
+  expect(typeof originalRefreshToken).toBe('string');
+  expiredSession.expires_at = Math.floor(Date.now() / 1000) - 60;
+  expiredSession.expires_in = 0;
+  const cookieTemplate = cookies.find((cookie) => cookie.name === authCookie.name || cookie.name.startsWith(`${authCookie.name}.`));
+  if (!cookieTemplate) throw new Error('Auth session cookie attributes were not found.');
+  const context = page.context();
+  for (const cookie of cookies.filter((item) => item.name === authCookie.name || item.name.startsWith(`${authCookie.name}.`))) {
+    await context.clearCookies({ name: cookie.name });
+  }
+  const encodedSession = encodeSessionCookie(expiredSession);
+  const cookieParts = encodedSession.match(/.{1,3180}/g) ?? [''];
+  for (const [index, value] of cookieParts.entries()) {
+    await context.addCookies([{
+      name: cookieParts.length === 1 ? authCookie.name : `${authCookie.name}.${index}`,
+      value,
+      url: new URL(page.url()).origin,
+      httpOnly: cookieTemplate.httpOnly,
+      secure: cookieTemplate.secure,
+      sameSite: cookieTemplate.sameSite,
+      ...(cookieTemplate.expires > 0 ? { expires: cookieTemplate.expires } : {}),
+    }]);
+  }
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible({ timeout: 30_000 });
+  const refreshedCookie = authSessionCookie(await context.cookies());
+  expect(refreshedCookie).toBeDefined();
+  if (!refreshedCookie) throw new Error('Refreshed Auth session cookie was not set.');
+  const refreshedSession = decodeSessionCookie(refreshedCookie.value);
+  expect(refreshedSession.expires_at).toBeGreaterThan(Math.floor(Date.now() / 1000));
+  expect(refreshedSession.refresh_token).not.toBe(originalRefreshToken);
+
   const browserSession = await page.evaluate(async () => {
     const response = await fetch('/api/v1/session');
     const payload = await response.json() as { data?: { workspaces?: unknown[] }; error?: { code?: string } };
