@@ -59,12 +59,14 @@ export const TextbeeMessageEventSchema = z.discriminatedUnion('kind', [
     kind: z.literal('message.received'),
     body: z.string().max(10000),
     optOut: z.enum(['none', 'stop', 'start', 'help']),
+    occurredAt: z.string().optional(),
   }),
   z.strictObject({
     ...textbeeIdentity,
     kind: z.literal('message.status'),
-    state: z.enum(['pending', 'sent', 'delivered', 'failed']),
+    state: z.enum(['pending', 'sent', 'delivered', 'failed', 'unknown']),
     errorCode: z.string().max(100).nullable(),
+    occurredAt: z.string().optional(),
   }),
 ]);
 export type TextbeeMessageEvent = z.infer<typeof TextbeeMessageEventSchema>;
