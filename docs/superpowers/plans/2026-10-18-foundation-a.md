@@ -47,10 +47,10 @@ Consumes canonical policies; produces forms and a locally runnable CI baseline.
 
 ## Task 3: Validate and deliver
 
-- [ ] Run checker and Git whitespace checks; fix all findings and inspect the entire diff.
-- [ ] Exercise checker failure paths using temporary copies with broken links/YAML/secrets.
-- [ ] Verify original human DOCX hash/status remains unchanged; no product paths added.
-- [ ] Commit on chore/foundation-a-governance; push and open PR against actual default.
-- [ ] Observe hosted CI if available; record results and admin/identity/source-sharing gaps.
+- [x] Run checker and Git whitespace checks; fix all findings and inspect the entire diff.
+- [x] Exercise checker failure paths using temporary copies with broken links/YAML/secrets.
+- [x] Verify original human DOCX hash/status remains unchanged; no product paths added.
+- [x] Commit on chore/foundation-a-governance; push and open PR against actual default.
+- [x] Observe hosted CI if available; record results and admin/identity/source-sharing gaps.
 
 Verification evidence belongs in the PR, not a duplicate ongoing progress tracker.
