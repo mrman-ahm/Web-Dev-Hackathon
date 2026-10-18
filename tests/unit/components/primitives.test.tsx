@@ -1,13 +1,15 @@
 import { createRef, useState } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { FormField } from '@/components/form-field';
 import { DataTable } from '@/components/data-table';
 import { Dialog } from '@/components/dialog';
 import { AsyncBoundary } from '@/components/async-boundary';
+
+afterEach(cleanup);
 
 describe('form primitives', () => {
   it('forwards native props and refs and never implicitly submits', async () => {
