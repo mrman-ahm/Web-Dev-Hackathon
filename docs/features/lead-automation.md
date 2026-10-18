@@ -1,6 +1,6 @@
 # Lead automation specification
 
-Status: proposed domain design; Owner-custody fallback explicitly accepted by the
+Status: approved domain design (2026-10-18); Owner-custody fallback explicitly accepted by the
 primary human on 2026-10-18. Other interpretations are listed in
 [ambiguities](../requirements/ambiguities.md). Covers F3.1–F3.9 and Q4–Q6/Q11/Q12.
 
@@ -29,7 +29,7 @@ is cleared while retrying. Only actual ownership transitions increment assignmen
 
 ## Intake, eligibility and round robin
 
-- Public web form, verified Twilio inbound and authorized manual entry call one
+- Public web form, verified Textbee inbound and authorized manual entry call one
   `createLead` application service. Each has source plus a durable workspace/intake key.
   A duplicate key with different normalized content returns conflict; same content replays.
 - A default disabled pool rule exists after signup; no-rule intake therefore has a durable

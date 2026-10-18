@@ -1,8 +1,9 @@
 # API contract v1
 
-Status: proposed adoption set for human architecture review. These endpoints are not
-implemented. After approval, `src/contracts/*.ts` Zod schemas are the executable source
-of truth; types use `z.infer`, fixtures are parsed by those schemas, and docs link them.
+Status: approved v1 adoption set (2026-10-18). Identity/workspace, audit, and the initial
+company/contact record endpoints are implemented; other listed endpoints remain planned.
+`src/contracts/*.ts` Zod schemas are the executable source of truth; types use `z.infer`,
+fixtures are parsed by those schemas, and docs link them.
 Do not maintain a parallel hand-written DTO tree. Route handlers and server-rendered
 application calls invoke the same application services and permission checks.
 
@@ -93,12 +94,14 @@ type RecoveryReason = 'overdue_acknowledgement'|'repeated_escalation'|'idle'
 type MessageDto = Versioned & {conversationId:Id;direction:'inbound'|'outbound';body:string;
   state:'received'|'pending'|'sent'|'delivered'|'failed'|'unknown';failureCode:string|null};
 type PaymentDto = Versioned & {opportunityId:Id;contactId:Id;requestedBy:Id;money:Money;
-  state:'pending'|'open'|'abandoned'|'expired'|'failed'|'paid'|'partially_refunded'|'refunded';
-  checkoutUrl:string|null;providerReference:string|null};
+  state:'pending'|'open'|'abandoned'|'expired'|'policy_expired'|'failed'|'paid'
+    |'partially_refunded'|'refunded'; checkoutUrl:string|null;
+  providerTrackerRef:string|null;providerPaymentRef:string|null;
+  providerExpiresAt:Instant|null;applicationPolicyExpiresAt:Instant|null};
 type AppointmentDto = Versioned & {contactId:Id;opportunityId:Id|null;employeeMembershipId:Id;
   startsAt:Instant;endsAt:Instant;timezone:string;state:'pending'|'confirmed'|'rescheduling'
   |'cancelling'|'cancelled'|'failed'|'conflict';providerReference:string|null};
-type IntegrationDto = Versioned & {provider:'twilio'|'stripe'|'google'|'telegram';
+type IntegrationDto = Versioned & {provider:'textbee'|'safepay'|'google'|'telegram';
   membershipId:Id|null;status:'disconnected'|'connected'|'error'|'reconnect_required';
   lastSuccessAt:Instant|null;lastError:{code:string;message:string}|null;limits:string[]};
 type AuditDto = {id:Id;eventType:string;actor:{kind:'user'|'system'|'provider';
@@ -165,12 +168,21 @@ is an additional guard. Read grants have own/all record scope as specified in se
 | PUT/DELETE `/integrations/:provider` | provider-specific write-only credentials/config; V | IntegrationDto | integrations.manage; never echo credentials; audit changes |
 | PUT `/notifications/destination` | chatId + enabled | masked destination/status | notifications.destination.manage_own + own membership; verification required |
 | GET `/notification-deliveries` | status/cursor | redacted delivery DTO | notifications.failures.view for admin visibility |
-| GET `/audit` | eventType/actor/from/to/cursor | AuditDto[] | audit.view and field masking; no audit write/delete routes |
+| GET `/audit` | `eventType`; `actor` = workspace membership ID; inclusive UTC `from`/`to`; opaque descending cursor; `limit` 1–100 (default 25) | Paginated AuditDto[] | `audit.view` and `crm.values.view` field masking; metadata-only direct table access; no audit write/delete routes |
 
 Provider-specific public endpoints:
-`POST /api/webhooks/twilio/:endpointId/messages`, `/status`, and
-`POST /api/webhooks/stripe/:endpointId`; configured connection identifier locates the
+`POST /api/webhooks/textbee/:endpointId/messages`, `/status`, and
+`POST /api/webhooks/safepay/:endpointId`; configured connection identifier locates the
 secret but is not authentication. Verify signature before trusted workspace effects.
+Textbee verifies `X-Signature` as lowercase-hex HMAC-SHA256 over the exact raw body with
+the connection's subscription secret. Safepay verifies `X-SFPY-SIGNATURE` as SHA-512
+HMAC over the exact raw request bytes. The endpoint ID only selects a candidate configured
+connection; reject unknown/disabled connections and invalid signatures before enqueueing
+trusted business work. Textbee's stable `idempotencyKey` is the webhook event identity;
+store `smsId` and `smsBatchId` separately. Safepay's top-level `token` is the event identity,
+`data.tracker` is the checkout correlation key, and payment/refund references remain
+separate nullable values. Never infer successful payment from a redirect. A local policy
+deadline produces `policy_expired`; `expired` is reserved for provider-confirmed expiry.
 `GET /api/oauth/google/callback` validates state/actor; `POST /api/internal/jobs/run`
 requires HMAC-SHA256 of timestamp, nonce and original body using a rotating high-entropy
 internal credential. Cron signs with Vault secret; server verifies constant-time, <=30s

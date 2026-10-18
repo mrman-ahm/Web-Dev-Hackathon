@@ -1,9 +1,9 @@
 # Stable presentation interfaces — first wave
 
-Status: proposed minimal interface; becomes stable with architecture/contract approval.
+Status: approved stable first-wave interface (2026-10-18).
 Executable exports belong only to `src/contracts/ui.ts`, imported with type/schema-only
 public entrypoints. UI must not import domain repositories, Supabase service clients,
-permission evaluators, raw database types or provider SDKs. The core lane supplies
+permission evaluators, raw database types or provider SDKs. Developer 1 owns all UI and the core lane supplies
 schema-parsed synthetic fixtures under `tests/fixtures/ui.ts` and real-data adapters.
 
 ```ts
@@ -21,7 +21,8 @@ type MoneyTotal = {amountMinor:string;currency:string}; // signed aggregate
 type MetricValue = {kind:'count';value:number}|{kind:'duration';seconds:number|null}
   |{kind:'money';totals:MoneyTotal[]}|{kind:'statusCounts';counts:Record<string,number>};
 type DashboardMetricId = 'new_leads_today'|'open_pipeline_value'|'first_response_seconds'
-  |'recovery_count'|'escalations_24h'|'availability'|'upcoming_appointments'|'payments_month';
+  |'recovery_count'|'escalations_24h'|'availability'|'upcoming_appointments'|'payments_month'
+  |'net_collections_month';
 type DashboardMetric = {id:DashboardMetricId;label:string} & (
   {visibility:'visible';value:MetricValue;drilldownHref:string|null}
   |{visibility:'restricted'}); // no value or URL on restricted metrics
@@ -30,7 +31,8 @@ type PipelineTotals = {visibility:'visible';stages:PipelineStageValue[]}
   |{visibility:'restricted'};
 type DashboardSnapshot = {scope:'personal'|'company';workspaceId:string;asOf:string;
   timezone:string;metrics:DashboardMetric[];openPipelineByStage:PipelineTotals;
-  upcomingAppointments:AppointmentSummary[]};
+  upcomingAppointments:AppointmentSummary[];collections:{visibility:'visible';grossPayments:MoneyTotal[];
+  confirmedRefunds:MoneyTotal[];netCollected:MoneyTotal[]}|{visibility:'restricted'}};
 type AppointmentSummary = {id:string;contactName:string;employeeName:string;
   startsAt:string;endsAt:string;timezone:string;status:string};
 type ContactSummary = {id:string;name:string;companyName:string|null;ownerName:string|null};
@@ -53,3 +55,7 @@ getRowId,page,onPageChange})`, `Dialog({open,onOpenChange,title,description,chil
 onVisibilityChange})`. UI reports callbacks; core owns fetch, permissions and mutations.
 Use accessible DOM/dialog primitives rather than inventing keyboard/focus behavior.
 Do not require all future screens for independently mergeable UI foundation work.
+
+All UI implementation and presentation integration belong to Developer 1/GPT.
+Developer 2 does not consume this contract for frontend work. Its independent contracts
+are the provider adapter ports owned by Developer 1.

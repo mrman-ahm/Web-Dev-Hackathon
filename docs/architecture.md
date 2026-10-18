@@ -1,8 +1,8 @@
 # System architecture
 
-Status: **proposed for primary human review** under [issue #2](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/2).
+Status: **approved in principle by the primary human on 2026-10-18, with targeted ownership/reporting corrections applied** under [issue #2](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/2).
 The modular-monolith/Supabase direction and Owner-custody fallback are already human
-instructions. Detailed contracts below become stable after review; no deployed system
+instructions. Detailed contracts below are the approved implementation baseline; no deployed system
 or product requirement is claimed complete. See [ADRs](decisions/README.md).
 
 ## Execution and trust boundaries
@@ -41,7 +41,7 @@ flowchart LR
   Cron -->|Authenticated HTTPS dispatch| Worker[Next.js job worker]
   Worker --> Events
   Worker --> Adapters[Provider adapters]
-  Adapters --> Providers[Twilio / Stripe / Google / Telegram]
+  Adapters --> Providers[Textbee / Safepay / Google / Telegram]
   Providers -->|Signed webhooks / OAuth callback| Next
   Events --> RT
 ```
@@ -63,7 +63,7 @@ boundaries, not fifteen separately deployed packages. Names in contracts are can
 | Assignment/escalation / `modules/leads/assignment` | Availability, assignment rules/cursor/history, acknowledgements/deadlines | lead.assigned/acknowledged/escalated/reassigned, employee.availability_changed | Leads/jobs; no provider HTTP inside allocation transactions |
 | Recovery / `modules/leads/recovery` | Authorized read projection/reasons and recovery actions | consumes lead/activity/availability changes | Leads/CRM; never an independently editable owner table |
 | Messaging / `modules/messaging` | Conversations, messages, opt-outs and status | message.received/sent/failed; consumes provider inbox | CRM, leads, integrations; no duplicate contacts/intake logic |
-| Payments / `modules/payments` | Payment requests/provider facts/refund ledger | payment.confirmed/refunded; consumes Stripe inbox | CRM/integrations; no card data or projected-as-collected math |
+| Payments / `modules/payments` | Payment requests/provider facts/refund ledger | payment.confirmed/refunded; consumes Safepay inbox | CRM/integrations; no card data or projected-as-collected math |
 | Calendar / `modules/calendar` | Employee connections, busy checks, local reservations, appointments | appointment.created/rescheduled/cancelled | Identity/CRM/integrations; no silent overlap or successful state before provider confirmation |
 | Notifications / `modules/notifications` | Destinations, delivery attempts, Telegram adapter | notification.delivery_changed; consumes lead.escalated | Integrations/outbox; adapter does not own lead rules or retries |
 | Audit / `modules/audit` | Append-only audit rows and restricted history queries | consumes all durable mutation facts in same transaction | Permissions; no edit/delete endpoint |
@@ -155,6 +155,17 @@ flowchart LR
   [security](security.md), [acceptance](testing/acceptance.md).
 - [Requirements](requirements/traceability.md) and [ambiguities](requirements/ambiguities.md).
 
-Do not classify proposal review as implementation or provider acceptance. Foundation C
+Do not classify architecture review as implementation or provider acceptance. Foundation C
 links accepted contracts to issues; Foundation D begins independently reviewable core/UI
-work. Current staffing is one human across both lanes; no second laptop/agent is claimed active.
+work. Two human developers use separate machines: Developer 1/GPT owns all UI and core;
+Developer 2/Gemini owns Textbee/Safepay/Telegram adapters only. Remote Gemini execution
+is not claimed; handoffs and PRs coordinate it.
+
+## Corrected developer execution lanes
+
+Developer 1/GPT owns every frontend/design-system/shell/presentation task and all
+provider-independent application/domain/database/credential/job logic, plus Google Calendar.
+Developer 2/Gemini owns only the Textbee, Safepay and Telegram server adapters, provider
+signature validation/normalization/error classification and provider unit/contract tests.
+Adapter paths and forbidden changes are in ownership.md; no direct Gemini process is
+assumed accessible on the other machine. Shared contracts remain Developer 1's authority.

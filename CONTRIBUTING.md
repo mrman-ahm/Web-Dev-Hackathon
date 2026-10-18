@@ -32,11 +32,12 @@
 Synchronize at task start, dependency availability, contract change, feature completion,
 merge, integration milestone, or critical incompatibility. Do not constantly poll or
 rebase independent work. Notify affected consumers through the relevant GitHub issue/PR.
-One independent human approval is the target. With two active humans, sensitive/cross-domain
-changes require the other developer, including Developer 1-authored work. The current
-single-human staffing and review rules are defined in [ownership](docs/ownership.md);
-agent-produced work still requires primary human review, and human-authored sensitive
-work needs another qualified human before independent review can be claimed.
+One independent human approval is the target. Sensitive/cross-domain changes require
+the other developer or another qualified human, including Developer 1-authored work.
+Both developers operate on separate machines with the corrected core/UI versus provider-
+adapter responsibilities in [ownership](docs/ownership.md). Agent review does not replace
+required human review. Approved dependency branches can unblock implementation while
+parent PR merge/retarget remains subject to that policy.
 Supervisor analysis supports human review and cannot approve on a human's behalf.
 If a reviewer lacks expertise or access, record the blocker and obtain a qualified
 human; do not bypass policy. See [settings](docs/repository-settings.md) for enforcement gaps.

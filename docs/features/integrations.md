@@ -1,6 +1,6 @@
 # Integration architecture
 
-Status: proposed provider boundaries; no integration is implemented or real acceptance
+Status: approved provider boundaries (2026-10-18); no integration is implemented or real acceptance
 claimed. Each adapter lives behind injected ports and never owns CRM allocation,
 permission or money-state rules. Provider limits must be rechecked at implementation.
 
@@ -40,83 +40,114 @@ Supabase Vault and the server environment; it is independent of per-workspace to
 Connection changes are authorized/audited and invalidate affected jobs safely. No paid
 provider/project provisioning or production resource mutation occurs without explicit scope.
 
-## Adapter interfaces (server-only)
+## Versioned adapter interfaces (server-only)
 
-```ts
-type ProviderOutcome<T> = {status:'confirmed';value:T;reference:string}
-  |{status:'temporary_failure';code:string;retryAfterSeconds?:number}
-  |{status:'permanent_failure';code:string}
-  |{status:'unknown';code:string;reconciliationReference?:string};
-interface MessagingAdapter {
-  verifyInbound(input:{rawBody:Uint8Array;headers:Headers;canonicalUrl:string},
-    credentials:TwilioCredentials):VerifiedMessageEvent;
-  send(input:SendMessageCommand,credentials:TwilioCredentials):Promise<ProviderOutcome<SentMessage>>;
-}
-interface PaymentsAdapter {
-  verifyWebhook(input:RawWebhook,credentials:StripeCredentials):VerifiedPaymentEvent;
-  createCheckout(input:CheckoutCommand,credentials:StripeCredentials):Promise<ProviderOutcome<CheckoutSession>>;
-}
-interface CalendarAdapter {
-  busy(input:BusyQuery,credentials:GoogleCredentials):Promise<ProviderOutcome<BusyIntervals>>;
-  upsert(input:CalendarEventCommand,credentials:GoogleCredentials):Promise<ProviderOutcome<CalendarEvent>>;
-  cancel(input:CancelEventCommand,credentials:GoogleCredentials):Promise<ProviderOutcome<CancelledEvent>>;
-}
-interface NotificationAdapter {
-  send(input:{chatId:string;text:string;deliveryId:string},token:string):Promise<ProviderOutcome<{messageId:string}>>;
-}
-```
+The active provider-neutral ports and Zod schemas live in src/contracts/integrations.ts.
+Messaging uses SmsAdapterV1 / SmsWebhookEventV1 with Textbee; payments use
+PaymentsAdapterV1 / SafepayPaymentEventV1 with Safepay Sandbox; notifications use
+NotificationAdapterV1 with Telegram. Active connection choices are Textbee, Safepay,
+Google Calendar and Telegram. Legacy provider wire schemas, if retained for a migration,
+are not active connection choices.
 
-These normalized commands/results are defined with Zod in `src/contracts/integrations.ts`
-when scaffolding lands. Provider SDK types never cross presentation/domain boundaries.
-Credentials are passed by the orchestration layer; an adapter may not query arbitrary
-workspace secrets or implement its own retry loop/assignment logic.
+Adapters receive explicit credentials and normalized commands. They never query workspace
+secrets or own persistence, assignment, accounting, idempotency storage or retries. Results
+must distinguish confirmed, temporary failure, permanent failure and unknown outcome.
+Provider SDK types stay inside adapter modules. Core verifies the connection/workspace,
+authorizes the action, persists intent/event, and applies business effects transactionally.
 
-## Twilio WhatsApp Sandbox / SMS
+## Textbee Android SMS
 
-Use official SDK signature validation with exact configured external URL (including
-query and encoding) and all original form parameters; JSON endpoints use raw body hash
-validation appropriate to the SDK. Do not reconstruct URL from attacker-controlled Host
-or blindly trust forwarded headers. Account/To/channel must match configured connection.
-Use workspace account auth token; do not implement custom HMAC algorithms.
-[Twilio signing reference](https://www.twilio.com/docs/usage/webhooks/webhooks-security).
+A workspace configures a Textbee API key, device selection and webhook subscription. The
+send API accepts E.164 recipients and returns an smsBatchId when Textbee queues a batch.
+HTTP 200 means accepted and pending; it does not prove that the phone sent the SMS or that
+the carrier delivered it. A later MESSAGE_SENT callback means the Android phone handed it
+to the carrier. MESSAGE_DELIVERED is available only when the carrier reports delivery.
 
-Inbound MessageSid dedupes message/contact/lead effects. Phone matching uses canonical
-E.164, with WhatsApp channel prefix normalized separately. Unknown phones invoke the
-shared CRM/lead service; known contacts attach existing conversation/open intake episode.
-Status callbacks can be repeated/out of order; persist sent/delivered/failed states
-without regressing delivered to sent. A callback may precede outbound response: reconcile
-by provider reference. Owner visibility is conversation permission plus record scope.
+Textbee signs each webhook body with its subscription signing secret. The route verifies
+X-Signature as lowercase-hex HMAC-SHA256 over the exact raw bytes using a constant-time
+comparison before parsing or trusting any payload fields. Each subscription has its own
+secret. Invalid signatures are rejected without storing an event or applying CRM effects.
+Deduplicate the durable inbox on idempotencyKey; Textbee retries the same delivery with
+the same key. Textbee does not guarantee event order, so reconciliation must compare the
+provider timestamps and never regress a delivered/final state because an earlier callback
+arrived late.
 
-Outgoing send checks opted-out state at enqueue and dispatch. Confirmed provider message
-reference is stored; failures stay visible with reason and controlled retry. Twilio send
-may lack safe application-level idempotency for a particular operation: after uncertain
-submission reconcile rather than silently create another message. Sandbox phones must
-join the sandbox first; display that limitation. Real-phone inbound/reply/status and
-forgery/replay evidence are required for I1 completeness.
+Keep smsId (one message) and smsBatchId (the originating send request) in separate fields.
+A bulk batch produces per-recipient events; correlate each status callback to both the
+message and its batch. Preserve the original provider status in diagnostics. UNKNOWN_STATE
+is non-final and must not be presented as failed. Preserve Android/carrier error code and
+reason for MESSAGE_FAILED; the provider marks that message final, so an employee retry
+creates a new visible send attempt rather than resending the same failed provider message.
 
-## Stripe test payments
+For MESSAGE_RECEIVED, use the provider receivedAt time, not webhook arrival time. An
+offline Android phone may upload a message later; Textbee documents that events older than
+48 hours may be stored without a webhook, so reconciliation may need the provider message
+history API. A sender can be a phone number, short code or text sender name. Preserve the
+original sender, and perform CRM phone matching only when it is a valid normalized E.164
+number; do not invent a customer identity from a label or short code.
 
-Use hosted Checkout in test mode; credentials and endpoint signing secret are per
-connection. Verify Stripe-Signature against original bytes with the official SDK before
-DB changes; enforce current timestamp tolerance and retain dedupe identities. Restrict
-supported event types and pinned stable Stripe API version in the implementation; do not
-adopt preview APIs merely because examples mention them.
-[Stripe webhook reference](https://docs.stripe.com/webhooks).
+References: [Textbee sending](https://textbee.dev/docs/sending-sms/sending-sms),
+[Textbee webhook verification and retries](https://textbee.dev/docs/webhooks), and
+[Textbee event shapes/order](https://textbee.dev/docs/webhooks/events). Full R05 acceptance
+requires an actual Android phone/SIM to receive a message, send an incoming message, and
+show a real reply plus provider status callbacks through the running application.
 
-Create payment request then Checkout job with stable idempotency key derived from request
-ID. Session metadata contains opaque internal references; validate them against the
-connection/workspace/contact/opportunity relationship, amount and currency. Do not trust
-metadata to select an unrelated tenant. Success/cancel URLs only navigate; signed provider
-facts establish money. `checkout.session.completed` is paid only when provider payment
-status confirms paid; delayed methods require later success/failure events. Reconcile
-actual payment objects on out-of-order events. Unique payment/refund object references
-prevent double accounting across distinct event types.
+## Safepay Sandbox payments
 
-Store pending/open/abandoned/expired/failed/paid/partially_refunded/refunded; display
-abandonment as observed/inferred using its evidence source. Closing a browser is not proof.
-Confirmed payment/refund facts dominate old failures/expiration; ledger is immutable and
-currencies are never mixed. Card data goes only to hosted Stripe UI and is never stored
-or logged. Send request links only via allowed messaging; preserve requester/provider refs.
+Use Safepay Sandbox hosted Checkout; never store or log card data. Create the payment
+tracker server-side with the documented /order/payments/v3/ flow using the merchant API
+key, intent, mode, currency, integer minor-unit amount and application metadata. Then get
+a short-lived passport token from /client/passport/v1/token and generate the checkout URL
+from the tracker, token, environment, source, and allowlisted success/cancel URLs using the
+supported SDK/helper. Do not use an undocumented order-init route or guess a checkout URL.
+Browser redirect or local policy timeout is not payment confirmation.
+
+Verify the merchant webhook over the exact raw request body with the configured webhook
+signing secret and documented SHA-512 HMAC in X-SFPY-SIGNATURE. Reject invalid signatures
+before parsing or changing payment/accounting state. The top-level token is a stable event
+identity. data.tracker identifies the persisted checkout tracker. These identities are not
+interchangeable with payment or refund object references; leave absent references null and
+correlate to a trusted saved tracker. Provider metadata is untrusted input and can help only
+after it matches that persisted tracker and workspace.
+
+Normalize official payment.succeeded, payment.failed and payment.refunded facts from their
+actual envelopes and provider timestamps, preferring event-specific charged_at, failed_at
+or refunded_at when present. Only payment.refunded confirms a completed refund. Require
+data.refund_amount for that event; never interpret a refund request/initiation or an amount
+field as a completed refund. Use one durable event identity plus separate tracker/payment/
+refund keys to prevent duplicate ledger entries. Failed, delayed, out-of-order or unknown
+events must not overwrite a confirmed payment/refund fact.
+
+Store providerExpiresAt separately from applicationPolicyExpiresAt. An application-owned
+checkout deadline can mark local workflow as no longer actionable; it is not evidence that
+Safepay expired the tracker. A provider-confirmed expiry may be recorded only from a
+verified provider fact. Keep gross payments, confirmed refunds and signed net totals
+separate by currency and confirmation month.
+
+References: [Safepay Express Checkout](https://safepay-docs.netlify.app/build-your-integration/express-checkout/?platform=web),
+[Safepay merchant webhook types](https://safepay-docs.netlify.app/developers/webhooks/webhook-types/),
+and [Safepay HMAC verification](https://safepay-docs.netlify.app/developers/webhooks/verify-hmac-signatures/).
+Full R06 acceptance requires a real Safepay Sandbox checkout, verified payment webhook,
+provider-confirmed refund and persisted ledger reconciliation.
+
+## Telegram escalation notifications
+
+Per-workspace bot token managed with integrations.manage; per-member destination managed
+with notifications.destination.manage_own (default allowed, configurable). Verify each
+member destination by a user-initiated bot challenge so staff cannot accidentally route
+lead data to another chat. Use Bot API sendMessage with safe plain text/formatting, bounded
+content and an allowlisted application lead link. Include lead identity, source, reason and
+link, but no payment values or excess customer data. The bot token appears in the required
+API URL, so redact the full URL from transport logs and errors. [Telegram Bot API reference](https://core.telegram.org/bots/api#sendmessage).
+
+Confirm send success only from a valid response with ok=true and a positive integer
+result.message_id. Preserve 429 retry_after, blocked-chat/permanent errors and uncertain
+network outcomes for core orchestration. One delivery per escalation/new owner. A missing
+or invalid destination yields visible permanent failure and in-app fallback, not a silent
+send. Telegram has no universal send idempotency: keep timeout outcomes unknown and make
+any duplicate-risk retry visible. Lead reassignment itself remains exactly once/version.
+Full R08 acceptance requires an actual Telegram alert after escalation and a working link
+to the correctly authorized lead.
 
 ## Google OAuth and Calendar
 
@@ -175,3 +206,10 @@ configured permissions can change connections; connection edits are audited. One
 provider never blocks unrelated CRM/auth/other provider work. Webhooks need public HTTPS;
 local tests use a tunnel/deployed test endpoint plus real provider-driven actions. Signed
 synthetic payloads validate parsing/forgery but never prove real delivery/completeness.
+
+## Developer 2 adapter handoff boundary
+
+Textbee/Safepay/Telegram SDK adapters, provider-specific signatures, normalization and
+error classification/tests belong to Developer 2/Gemini. Developer 1 owns HTTP routes,
+trusted workspace resolution, persistence, credentials, retries/domain effects and all UI.
+Google Calendar adapter and OAuth orchestration remain entirely Developer 1.

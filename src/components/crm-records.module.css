@@ -1,0 +1,26 @@
+.main { max-width: 94rem; }
+.headerNav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 1rem; }
+.headerNav > a { font-weight: 650; }
+.columns { display: grid; align-items: start; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.heading, .sectionHeading, .recordHeading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.heading > div { display: grid; gap: .5rem; }
+.sectionHeading h2 { margin: 0; }
+.count, .recordHeading > span { color: var(--ub-muted); font-size: .8125rem; font-variant-numeric: tabular-nums; }
+.createForm, .editForm { display: grid; gap: 1rem; padding: 1rem; border: 1px solid var(--ub-border); border-radius: var(--ub-radius); background: #f8faf8; }
+.createForm h3 { margin: 0; font-size: .9375rem; }
+.recordList { display: grid; gap: .75rem; }
+.record { display: grid; min-width: 0; gap: .75rem; padding: 1rem; border: 1px solid var(--ub-border); border-radius: var(--ub-radius); background: var(--ub-surface); overflow-wrap: anywhere; }
+.recordHeading h3 { margin: 0; }
+.selectField { display: grid; gap: .5rem; font-weight: 650; }
+.selectField select { width: 100%; min-height: 2.75rem; padding: .5rem .75rem; border: 1px solid #8b9e91; border-radius: var(--ub-radius); color: var(--ub-ink); background: var(--ub-surface); font: inherit; }
+.contactDetails { display: grid; gap: .5rem; margin: 0; }
+.contactDetails > div { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .5rem; }
+.contactDetails dt { color: var(--ub-muted); font-size: .8125rem; }
+.contactDetails dd { margin: 0; }
+@media (max-width: 850px) {
+  .columns { grid-template-columns: minmax(0, 1fr); }
+  .heading { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 520px) {
+  .headerNav { width: 100%; justify-content: space-between; }
+}

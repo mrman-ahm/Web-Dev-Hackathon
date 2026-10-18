@@ -1,0 +1,33 @@
+import { z } from 'zod';
+export const IdSchema = z.uuid();
+export const InstantSchema = z.iso.datetime({offset:false});
+export const VersionSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
+const supportedCurrencies = new Set(Intl.supportedValuesOf('currency'));
+export const CurrencySchema = z.string().regex(/^[A-Z]{3}$/).refine(value => supportedCurrencies.has(value), 'Expected an ISO currency supported by this runtime');
+export const TimezoneSchema = z.string().min(1).max(100).refine(value => {
+ try { new Intl.DateTimeFormat('en', {timeZone:value}); return true; } catch { return false; }
+}, 'Expected an IANA time zone');
+export const NonemptySchema = z.string().trim().min(1).max(500);
+export const InternalHrefSchema = z.string().max(2048).regex(/^\/(?!\/)/).refine(value => !Array.from(value).some(char => char === '\\' || char.charCodeAt(0) <= 32));
+export const HttpsUrlSchema = z.url({protocol:/^https$/});
+export const PhoneE164Schema = z.string().regex(/^\+[1-9]\d{1,14}$/);
+export const BaseLevelSchema = z.enum(['owner','admin','user']);
+export const AvailabilitySchema = z.enum(['available','busy','on_leave','offline']);
+/** Active provider choices surfaced by current connection DTOs and events.
+ * Legacy Twilio/Stripe V0 webhook contracts remain isolated in integrations.ts. */
+export const ProviderSchema = z.enum(['textbee','safepay','telegram','google']);
+export const OwnershipModeSchema = z.enum(['operational','custody']);
+export const LeadSourceSchema = z.enum(['form','message','manual']);
+export const RecoveryReasonSchema = z.enum(['overdue_acknowledgement','repeated_escalation','idle','awaiting_eligible_employee','escalation_chain_exhausted']);
+export const MoneySchema = z.strictObject({amountMinor:z.string().regex(/^(0|[1-9]\d*)$/),currency:CurrencySchema});
+export const MoneyTotalSchema = z.strictObject({amountMinor:z.string().regex(/^(0|-?[1-9]\d*)$/),currency:CurrencySchema});
+export const AckContextSchema = z.strictObject({leadId:IdSchema,assignmentVersion:VersionSchema});
+export const VersionedSchema = z.strictObject({id:IdSchema,version:VersionSchema});
+export type Id = z.infer<typeof IdSchema>;
+export type Instant = z.infer<typeof InstantSchema>;
+export type BaseLevel = z.infer<typeof BaseLevelSchema>;
+export type Availability = z.infer<typeof AvailabilitySchema>;
+export type Money = z.infer<typeof MoneySchema>;
+export type MoneyTotal = z.infer<typeof MoneyTotalSchema>;
+export type RecoveryReason = z.infer<typeof RecoveryReasonSchema>;
+export type AckContext = z.infer<typeof AckContextSchema>;

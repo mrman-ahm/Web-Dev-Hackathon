@@ -15,3 +15,13 @@ The original in the developer checkout has been preserved unchanged.
 entry; [ambiguities](ambiguities.md) distinguishes source conflicts, recommended
 interpretations and explicitly accepted human decisions. Do not change source text
 to match implementation. Record clarifications separately and link approval evidence.
+
+The official [Participant Rubric](participant-rubric.docx) is a second authoritative
+project document for judging, alongside (but not replacing) the problem statement.
+It was read in full from the supplied DOCX on 2026-10-18 and versioned byte-for-byte;
+SHA-256: `5c1d538a6056ce79b9f8c5be52f6524723e6536b5a6450669b8c5a60813dac12`.
+The exact ten criteria, weights, full-mark conditions, source-requirement crosswalk and
+evidence state are recorded in [rubric traceability](rubric-traceability.md). A separate
+[judge demo checklist](../testing/judge-demo-checklist.md) gives the actions required
+to demonstrate each criterion. Neither planning document is evidence that the running
+application has passed.

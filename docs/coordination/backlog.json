@@ -1,0 +1,1598 @@
+{
+  "epics": [
+    {
+      "code": "infra",
+      "title": "Repository and infrastructure",
+      "lane": "core",
+      "requirements": [
+        "Q13",
+        "Q14"
+      ]
+    },
+    {
+      "code": "auth",
+      "title": "Authentication and workspaces",
+      "lane": "core",
+      "requirements": [
+        "F1.1",
+        "F1.2",
+        "F1.6",
+        "Q1"
+      ]
+    },
+    {
+      "code": "security",
+      "title": "Permissions and security",
+      "lane": "core",
+      "requirements": [
+        "F1.3",
+        "F1.4",
+        "F1.5",
+        "F1.6",
+        "Q2",
+        "Q3"
+      ]
+    },
+    {
+      "code": "crm",
+      "title": "CRM and custom fields",
+      "lane": "core",
+      "requirements": [
+        "F2.1",
+        "F2.2",
+        "F2.6",
+        "F2.7",
+        "F2.8"
+      ]
+    },
+    {
+      "code": "pipelines",
+      "title": "Pipelines and opportunities",
+      "lane": "core",
+      "requirements": [
+        "F2.3",
+        "F2.4",
+        "F2.5"
+      ]
+    },
+    {
+      "code": "intake",
+      "title": "Lead intake",
+      "lane": "core",
+      "requirements": [
+        "F3.1"
+      ]
+    },
+    {
+      "code": "assignment",
+      "title": "Assignment and escalation",
+      "lane": "core",
+      "requirements": [
+        "F3.2",
+        "F3.3",
+        "F3.4",
+        "F3.5",
+        "F3.6",
+        "F3.8"
+      ]
+    },
+    {
+      "code": "recovery",
+      "title": "Recovery",
+      "lane": "core",
+      "requirements": [
+        "F3.7"
+      ]
+    },
+    {
+      "code": "messaging",
+      "title": "Messaging",
+      "lane": "core",
+      "requirements": [
+        "I1.1",
+        "I1.2",
+        "I1.3",
+        "I1.4",
+        "I1.5",
+        "I1.6",
+        "I1.7",
+        "I1.8",
+        "I1.9"
+      ]
+    },
+    {
+      "code": "payments",
+      "title": "Payments",
+      "lane": "core",
+      "requirements": [
+        "I2.1",
+        "I2.2",
+        "I2.3",
+        "I2.4",
+        "I2.5",
+        "I2.6",
+        "I2.7",
+        "I2.8"
+      ]
+    },
+    {
+      "code": "calendar",
+      "title": "Calendar",
+      "lane": "core",
+      "requirements": [
+        "I3.1",
+        "I3.2",
+        "I3.3",
+        "I3.4",
+        "I3.5",
+        "I3.6",
+        "I3.7"
+      ]
+    },
+    {
+      "code": "notifications",
+      "title": "Notifications",
+      "lane": "core",
+      "requirements": [
+        "I4.1",
+        "I4.2",
+        "I4.3",
+        "I4.4",
+        "F3.9"
+      ]
+    },
+    {
+      "code": "audit",
+      "title": "Audit history",
+      "lane": "core",
+      "requirements": [
+        "F4.1",
+        "F4.2",
+        "F4.3"
+      ]
+    },
+    {
+      "code": "dashboard",
+      "title": "Dashboards",
+      "lane": "core",
+      "requirements": [
+        "F5.1",
+        "F5.2",
+        "F5.3",
+        "F5.4",
+        "F5.5",
+        "Q12"
+      ]
+    },
+    {
+      "code": "realtime",
+      "title": "Realtime systems",
+      "lane": "core",
+      "requirements": [
+        "Q11"
+      ]
+    },
+    {
+      "code": "jobs",
+      "title": "Background processing and integrations foundation",
+      "lane": "core",
+      "requirements": [
+        "Q5",
+        "I5.1",
+        "I5.2",
+        "I5.3",
+        "I5.4",
+        "I5.5",
+        "I5.6",
+        "I5.7",
+        "I5.8"
+      ]
+    },
+    {
+      "code": "ui",
+      "title": "Frontend design system",
+      "lane": "frontend",
+      "requirements": [
+        "Q7",
+        "Q8",
+        "Q10"
+      ]
+    },
+    {
+      "code": "testing",
+      "title": "Testing and verification",
+      "lane": "core",
+      "requirements": [
+        "Q4",
+        "Q5",
+        "Q6",
+        "Q9"
+      ]
+    },
+    {
+      "code": "operations",
+      "title": "Deployment and operational readiness",
+      "lane": "core",
+      "requirements": [
+        "Q13"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "code": "scaffold",
+      "parent": "infra",
+      "title": "Scaffold Next.js, executable shared contracts and product CI",
+      "lane": "core",
+      "requirements": [
+        "Q13",
+        "Q14"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "architecture"
+      ],
+      "paths": [
+        "package.json",
+        "package-lock.json",
+        "src/contracts/",
+        "src/lib/",
+        "src/app/layout.tsx",
+        ".github/workflows/",
+        "tests/fixtures/"
+      ],
+      "acceptance": [
+        "Pinned compatible runtime/packages and one lockfile; documented fresh install/start/build",
+        "Strict TS, lint, Vitest/Playwright foundations and real CI commands pass",
+        "Executable UI/error/event schemas and validated synthetic fixtures match accepted contracts",
+        "No production secrets or fabricated product functionality"
+      ]
+    },
+    {
+      "code": "auth-workspaces",
+      "parent": "auth",
+      "title": "Implement Auth, signup workspace bootstrap and session vertical slice",
+      "lane": "core",
+      "requirements": [
+        "F1.1",
+        "F1.2",
+        "F1.6",
+        "Q1",
+        "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold"
+      ],
+      "paths": [
+        "supabase/",
+        "src/modules/identity/",
+        "src/modules/permissions/",
+        "src/app/api/v1/auth/",
+        "src/app/api/v1/session/",
+        "src/app/api/v1/workspaces/",
+        "src/app/(auth)/"
+      ],
+      "acceptance": [
+        "Real Supabase signup creates workspace/Owner/default disabled rule atomically",
+        "Login/refresh/logout and revoked-session protected access behave correctly",
+        "Workspace-scoped settings persist after restart; two tenants and direct Data API/RPC denied",
+        "Migration reset/upgrade and meaningful live Auth/database tests pass; remaining invitations/granular permissions not claimed complete",
+        "Initial append-only audit and protected workspace command infrastructure are included; full audit API follows audit-core"
+      ]
+    },
+    {
+      "code": "invitations",
+      "parent": "auth",
+      "title": "Implement invitations, membership lifecycle and owner transfer",
+      "lane": "core",
+      "requirements": [
+        "F1.2",
+        "F1.6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces",
+        "permission-admin"
+      ],
+      "paths": [
+        "src/modules/identity/",
+        "supabase/migrations/",
+        "tests/integration/identity/"
+      ],
+      "acceptance": [
+        "Verified matching-email one-use expiring invitation works; replay/forgery denied",
+        "Admin cannot change Owner; transfer retains exactly one active Owner and moves custody atomically",
+        "Referenced memberships deactivate safely without destroying historical identity"
+      ]
+    },
+    {
+      "code": "permission-admin",
+      "parent": "security",
+      "title": "Implement configurable roles, overrides and record/field access",
+      "lane": "core",
+      "requirements": [
+        "F1.3",
+        "F1.4",
+        "F1.5",
+        "F1.6",
+        "Q2",
+        "Q3"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces"
+      ],
+      "paths": [
+        "src/modules/permissions/",
+        "supabase/migrations/",
+        "src/app/api/v1/workspaces/",
+        "tests/integration/security/"
+      ],
+      "acceptance": [
+        "Owner configures all required grants independently of role names; Manager is configurable",
+        "Protected value denied in API/list/detail/export/filter/audit/realtime paths",
+        "Current grant revocation and direct cross-tenant API/RPC/Data API tests fail safely",
+        "Own calendar/destination integration grants have explicit defaults and denials"
+      ]
+    },
+    {
+      "code": "security-regressions",
+      "parent": "security",
+      "title": "Verify request safety and authorization bypass matrix",
+      "lane": "core",
+      "requirements": [
+        "Q1",
+        "Q2",
+        "Q3"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "permission-admin"
+      ],
+      "paths": [
+        "tests/integration/security/",
+        "tests/e2e/security/",
+        "docs/testing/"
+      ],
+      "acceptance": [
+        "Forged/stale/revoked sessions and CSRF/input/unsafe URL cases covered",
+        "Owner privilege escalation, unsafe function grants/search paths and field leaks tested",
+        "No broad service-role client in ordinary user paths"
+      ]
+    },
+    {
+      "code": "crm-records",
+      "parent": "crm",
+      "title": "Implement companies, contacts and tenant-safe relationships",
+      "lane": "core",
+      "requirements": [
+        "F2.1",
+        "Q4",
+        "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces",
+        "permission-admin",
+        "audit-core"
+      ],
+      "paths": [
+        "src/modules/crm/",
+        "supabase/migrations/",
+        "src/app/(workspace)/crm/"
+      ],
+      "acceptance": [
+        "Stored company/contact CRUD with ownership scopes, phone normalization/uniqueness and safe archival",
+        "Composite tenant references reject cross-workspace links; optimistic edits prevent silent overwrite",
+        "Central record UI and direct API behavior use same services"
+      ]
+    },
+    {
+      "code": "custom-fields",
+      "parent": "crm",
+      "title": "Implement configurable typed and pipeline-specific custom fields",
+      "lane": "core",
+      "requirements": [
+        "F2.2",
+        "F2.3"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "crm-records",
+        "pipeline-core"
+      ],
+      "paths": [
+        "src/modules/crm/",
+        "supabase/migrations/",
+        "src/app/(workspace)/settings/fields/"
+      ],
+      "acceptance": [
+        "UI creates text/number/date/dropdown/checkbox fields and immediately renders them",
+        "Different pipelines have distinct definitions while contacts remain shared",
+        "Typed values/options/field conversion and archive behavior preserve existing data"
+      ]
+    },
+    {
+      "code": "filters-export",
+      "parent": "crm",
+      "title": "Implement combined filters, saved lists and permitted exports",
+      "lane": "core",
+      "requirements": [
+        "F2.6",
+        "F1.3",
+        "F1.4",
+        "Q9"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "crm-records",
+        "custom-fields",
+        "opportunity-ui"
+      ],
+      "paths": [
+        "src/modules/crm/filters/",
+        "src/modules/crm/exports/",
+        "tests/integration/crm/"
+      ],
+      "acceptance": [
+        "At least three criteria combine; saved filters update membership dynamically",
+        "Allowlisted AST/cursor pagination and export record/field scopes match",
+        "Large synthetic datasets remain responsive and protected value filters are denied"
+      ]
+    },
+    {
+      "code": "customer-history",
+      "parent": "crm",
+      "title": "Implement complete customer view and activity history",
+      "lane": "core",
+      "requirements": [
+        "F2.7",
+        "F2.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "crm-records",
+        "opportunity-ui",
+        "messaging-core",
+        "payments-core",
+        "calendar-core",
+        "audit-core"
+      ],
+      "paths": [
+        "src/modules/crm/activity/",
+        "src/app/(workspace)/crm/contacts/"
+      ],
+      "acceptance": [
+        "Contact/opportunity time-ordered activity includes all required action types with actor/time",
+        "Complete customer view composes permitted conversations/payments/appointments/ownership",
+        "New assignee gains permitted related scope; prior owner loses derived access"
+      ]
+    },
+    {
+      "code": "pipeline-core",
+      "parent": "pipelines",
+      "title": "Implement pipelines, stages and opportunity transactions",
+      "lane": "core",
+      "requirements": [
+        "F2.1",
+        "F2.3",
+        "F2.4",
+        "F2.5"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "crm-records"
+      ],
+      "paths": [
+        "src/modules/crm/pipelines/",
+        "supabase/migrations/"
+      ],
+      "acceptance": [
+        "Create/rename/reorder stages safely; occupied deletion uses explicit transactional destination",
+        "Stage-specific required fields block moves with meaningful errors",
+        "Opportunity financials remain protected; stage/pipeline/contact consistency enforced"
+      ]
+    },
+    {
+      "code": "opportunity-ui",
+      "parent": "pipelines",
+      "title": "Implement central opportunity board/list and configuration UI",
+      "lane": "core",
+      "requirements": [
+        "F2.3",
+        "F2.4",
+        "F2.5",
+        "Q7",
+        "Q8",
+        "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "pipeline-core",
+        "custom-fields",
+        "ui-foundation"
+      ],
+      "paths": [
+        "src/app/(workspace)/crm/opportunities/",
+        "src/modules/crm/presentation/"
+      ],
+      "acceptance": [
+        "Real-data board and list move opportunities through same validated command",
+        "All five field types/configuration feedback and accessible responsive controls",
+        "No backend-rule duplication in drag/drop or forms"
+      ]
+    },
+    {
+      "code": "lead-intake",
+      "parent": "intake",
+      "title": "Implement public/manual intake and trusted source routing",
+      "lane": "core",
+      "requirements": [
+        "F3.1",
+        "Q3",
+        "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "crm-records",
+        "lead-engine"
+      ],
+      "paths": [
+        "src/modules/leads/intake/",
+        "src/app/api/public/",
+        "src/app/(workspace)/leads/"
+      ],
+      "acceptance": [
+        "Public enabled endpoint and manual creation persist source/intake identity",
+        "Unknown-contact creation and intake atomic; anonymous duplicate/mismatched keys handled",
+        "No configured eligible pool uses accepted Owner custody without starting clock"
+      ]
+    },
+    {
+      "code": "lead-engine",
+      "parent": "assignment",
+      "title": "Implement atomic eligibility, assignment and availability",
+      "lane": "core",
+      "requirements": [
+        "F3.2",
+        "F3.3",
+        "F3.8",
+        "Q4",
+        "Q5"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces",
+        "permission-admin",
+        "jobs-core",
+        "audit-core"
+      ],
+      "paths": [
+        "src/modules/leads/",
+        "supabase/migrations/",
+        "tests/concurrency/leads/"
+      ],
+      "acceptance": [
+        "Workspace-first locks enforce one owner and open capacity with competing intakes",
+        "Stable round robin, configurable tiers/caps and Available eligibility including backups",
+        "Leave/offline synchronously transfers unacknowledged leads; acknowledged policy visible",
+        "Custody, default disabled rule, owner transfer and related conversation scope correct"
+      ]
+    },
+    {
+      "code": "ack-escalation",
+      "parent": "assignment",
+      "title": "Implement acknowledgement deadlines, escalation and durable recovery",
+      "lane": "core",
+      "requirements": [
+        "F3.4",
+        "F3.5",
+        "F3.6",
+        "F3.8",
+        "Q5"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "lead-engine"
+      ],
+      "paths": [
+        "src/modules/leads/assignment/",
+        "supabase/migrations/",
+        "tests/concurrency/leads/"
+      ],
+      "acceptance": [
+        "Explicit/qualifying owner actions check exact epoch/deadline; first response never resets",
+        "Cron due processing survives restart and races; one transition/outbox per version",
+        "Finite tiers preserve owner on exhaustion; manual same-owner transfer rejected",
+        "Late provider action cannot acknowledge newer epoch; explicit late recovery remains truthful"
+      ]
+    },
+    {
+      "code": "recovery-ui",
+      "parent": "recovery",
+      "title": "Implement recovery projection and lead operations screens",
+      "lane": "core",
+      "requirements": [
+        "F3.7",
+        "F3.4",
+        "Q7",
+        "Q8",
+        "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "ack-escalation",
+        "ui-foundation"
+      ],
+      "paths": [
+        "src/modules/leads/recovery/",
+        "src/app/(workspace)/leads/"
+      ],
+      "acceptance": [
+        "Overdue/twice-escalated/idle/custody/exhausted reasons with timestamps/thresholds",
+        "Authorized recovery/reassignment/late acceptance uses core commands",
+        "Countdown derives server deadline; no browser-owned timer side effects"
+      ]
+    },
+    {
+      "code": "integration-core",
+      "parent": "jobs",
+      "title": "Implement connections, encrypted secrets and verified inbox",
+      "lane": "core",
+      "requirements": [
+        "I5.1",
+        "I5.2",
+        "I5.3",
+        "I5.4",
+        "I5.5",
+        "I5.6",
+        "I5.7",
+        "I5.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "permission-admin",
+        "jobs-core",
+        "audit-core"
+      ],
+      "paths": [
+        "src/modules/integrations/",
+        "supabase/migrations/",
+        "src/app/(workspace)/integrations/"
+      ],
+      "acceptance": [
+        "Per-workspace write-only credential configuration and safe central status/history",
+        "Verified durable inbox, semantic receipt, bounded errors/retries and audit",
+        "One provider failure isolated; secret/forged-request tests pass"
+      ]
+    },
+    {
+      "code": "jobs-core",
+      "parent": "jobs",
+      "title": "Implement durable outbox, leases and scheduled dispatch",
+      "lane": "core",
+      "requirements": [
+        "Q5",
+        "Q6",
+        "I5.4",
+        "I5.5",
+        "I5.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces",
+        "audit-core"
+      ],
+      "paths": [
+        "src/modules/jobs/",
+        "src/app/api/internal/jobs/",
+        "supabase/migrations/",
+        "tests/integration/jobs/"
+      ],
+      "acceptance": [
+        "Transactional intent, SKIP LOCKED claims, lease tokens, stale completion and crash recovery",
+        "Bounded backoff/dead-letter visibility and safe unknown outcomes",
+        "Five-second schedule/HMAC replay controls verified locally; hosted timing not claimed until real deployment"
+      ]
+    },
+    {
+      "code": "messaging-core",
+      "parent": "messaging",
+      "title": "Implement real Textbee messaging and lead capture",
+      "lane": "core",
+      "requirements": [
+        "I1.1",
+        "I1.2",
+        "I1.3",
+        "I1.4",
+        "I1.5",
+        "I1.6",
+        "I1.7",
+        "I1.8",
+        "I1.9",
+        "F3.1"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "integration-core",
+        "lead-intake",
+        "textbee-adapter"
+      ],
+      "paths": [
+        "src/modules/messaging/",
+        "src/app/api/webhooks/textbee/",
+        "src/app/(workspace)/messages/"
+      ],
+      "acceptance": [
+        "Verify Textbee X-Signature over exact raw body; process a real Android SIM inbound message and send a real CRM reply",
+        "Reconcile smsId and smsBatchId per recipient; preserve receivedAt, UNKNOWN_STATE and carrier/device failures without false failure or regression",
+        "Workspace phone matching + message/lead replay dedupe and conversation permissions",
+        "Opt-out checks at enqueue/send; failures and unknown outcomes remain visible with safe retry/reconciliation",
+        "Assignment context and new-owner conversation access tested"
+      ]
+    },
+    {
+      "code": "payments-core",
+      "parent": "payments",
+      "title": "Implement Safepay Sandbox Checkout, verified payment facts and refunds",
+      "lane": "core",
+      "requirements": [
+        "I2.1",
+        "I2.2",
+        "I2.3",
+        "I2.4",
+        "I2.5",
+        "I2.6",
+        "I2.7",
+        "I2.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "integration-core",
+        "pipeline-core",
+        "messaging-core",
+        "safepay-adapter"
+      ],
+      "paths": [
+        "src/modules/payments/",
+        "src/app/api/webhooks/safepay/",
+        "supabase/migrations/"
+      ],
+      "acceptance": [
+        "Real Safepay Sandbox hosted checkout and refund drive persisted status automatically through verified webhooks",
+        "Raw-body SHA-512 signatures, duplicate event IDs, tracker correlation, out-of-order payment/refund events and no duplicate ledger entries",
+        "Only payment.refunded plus provider refund_amount confirms refund completion; application-policy expiry is distinct from provider-confirmed expiry",
+        "Failed/expired/abandoned outcomes and requester/contact/provider traceability",
+        "No card data; signed monthly net and lifetime collected values reconcile"
+      ]
+    },
+    {
+      "code": "calendar-core",
+      "parent": "calendar",
+      "title": "Implement real employee Google Calendar and appointments",
+      "lane": "core",
+      "requirements": [
+        "I3.1",
+        "I3.2",
+        "I3.3",
+        "I3.4",
+        "I3.5",
+        "I3.6",
+        "I3.7"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "integration-core",
+        "crm-records"
+      ],
+      "paths": [
+        "src/modules/calendar/",
+        "src/app/api/oauth/google/",
+        "supabase/migrations/"
+      ],
+      "acceptance": [
+        "Real consent/disconnect, encrypted refresh/revocation and exact self-service grants",
+        "Freebusy/local reservations; DST-correct real create/reschedule/cancel with activity",
+        "Durable target operations/old+proposed reservations survive crash and unknown outcomes",
+        "Originating actor/assignment context prevents late acknowledgement mistakes"
+      ]
+    },
+    {
+      "code": "telegram-adapter",
+      "parent": "notifications",
+      "title": "Implement pure Telegram provider adapter and provider tests",
+      "lane": "provider",
+      "requirements": [
+        "I4.2",
+        "I4.3",
+        "I4.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold"
+      ],
+      "paths": [
+        "src/modules/notifications/adapters/telegram.ts",
+        "tests/unit/providers/telegram.test.ts"
+      ],
+      "acceptance": [
+        "Implements core-owned normalized send port without DB/secret/retry/domain orchestration",
+        "Safe plain text/URLs, Telegram 429/retry_after/permanent/unknown result normalization",
+        "Provider-specific unit/contract tests; no UI work or fake real-delivery claim"
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6"
+    },
+    {
+      "code": "escalation-delivery",
+      "parent": "notifications",
+      "title": "Connect escalation outbox to real Telegram delivery",
+      "lane": "core",
+      "requirements": [
+        "F3.9",
+        "I4.1",
+        "I4.2",
+        "I4.3",
+        "I4.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "ack-escalation",
+        "telegram-adapter"
+      ],
+      "paths": [
+        "src/modules/notifications/",
+        "tests/integration/notifications/"
+      ],
+      "acceptance": [
+        "One delivery per escalation/new owner; real chat receipt within minute healthy path",
+        "Missing destination and failed/exhausted/unknown delivery visible to admins",
+        "Crash/replay and provider-rate-limit handling preserves atomic lead assignment"
+      ]
+    },
+    {
+      "code": "audit-core",
+      "parent": "audit",
+      "title": "Implement append-only audit service and safe history API",
+      "lane": "core",
+      "requirements": [
+        "F4.1",
+        "F4.2",
+        "F4.3"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces"
+      ],
+      "paths": [
+        "src/modules/audit/",
+        "supabase/migrations/",
+        "src/app/api/v1/workspaces/"
+      ],
+      "acceptance": [
+        "Trusted actor/time/target/diffs recorded transactionally for every required domain/config action",
+        "Restricted event/user/date filters and field masking",
+        "No app endpoint/ordinary SQL permission can edit/delete; deletion preserves history"
+      ]
+    },
+    {
+      "code": "audit-view",
+      "parent": "audit",
+      "title": "Implement accessible audit viewer from stable read contracts",
+      "lane": "frontend",
+      "requirements": [
+        "F4.2",
+        "Q7",
+        "Q8",
+        "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold",
+        "ui-foundation"
+      ],
+      "paths": [
+        "src/modules/audit/presentation/",
+        "tests/unit/audit/"
+      ],
+      "acceptance": [
+        "Typed cursor/filter table renders masked audit DTOs and async states",
+        "Keyboard/responsive filters with no duplicated auth or raw before/after secret exposure",
+        "Fixtures labeled; core adapter wiring tracked separately"
+      ]
+    },
+    {
+      "code": "dashboard-core",
+      "parent": "dashboard",
+      "title": "Implement all real metrics, preferences and permitted drill-downs",
+      "lane": "core",
+      "requirements": [
+        "F5.1",
+        "F5.2",
+        "F5.3",
+        "F5.4",
+        "F5.5",
+        "Q12"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "ack-escalation",
+        "payments-core",
+        "calendar-core",
+        "crm-records",
+        "realtime-core"
+      ],
+      "paths": [
+        "src/modules/dashboard/",
+        "supabase/migrations/",
+        "tests/integration/metrics/"
+      ],
+      "acceptance": [
+        "All eight glossary-based metrics reconcile to real records and workspace-local periods",
+        "Personal/company/financial scope with >=3 filtered drill-downs",
+        "Signed refund-month totals and persisted widget visibility; no invented empty statistics",
+        "Separate gross received, confirmed refunds and signed net collections per currency"
+      ]
+    },
+    {
+      "code": "dashboard-view",
+      "parent": "dashboard",
+      "title": "Implement dashboard presentation with typed restricted metrics",
+      "lane": "frontend",
+      "requirements": [
+        "F5.1",
+        "F5.3",
+        "F5.5",
+        "Q7",
+        "Q8",
+        "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold",
+        "ui-foundation"
+      ],
+      "paths": [
+        "src/modules/dashboard/presentation/",
+        "tests/unit/dashboard/"
+      ],
+      "acceptance": [
+        "DashboardSnapshot typed consumption, no-value restricted branches and signed totals",
+        "Accessible widgets/drill-down callbacks/preferences with loading/empty/error",
+        "Synthetic previews explicit; real data adapter belongs to core"
+      ]
+    },
+    {
+      "code": "realtime-core",
+      "parent": "realtime",
+      "title": "Implement private per-member invalidation and safe refetch",
+      "lane": "core",
+      "requirements": [
+        "Q11",
+        "Q2",
+        "F1.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "permission-admin",
+        "jobs-core"
+      ],
+      "paths": [
+        "src/modules/realtime/",
+        "supabase/migrations/",
+        "tests/integration/realtime/"
+      ],
+      "acceptance": [
+        "Private channel authorization with no raw values/messages/provider secrets",
+        "Real lead/message/escalation updates appear without refresh",
+        "Reconnect refetch, grant/membership revocation and two-tenant tests"
+      ]
+    },
+    {
+      "code": "ui-foundation",
+      "parent": "ui",
+      "title": "Build design system, accessible shell and shared primitives",
+      "lane": "frontend",
+      "requirements": [
+        "Q7",
+        "Q8",
+        "Q10",
+        "Q14"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold"
+      ],
+      "paths": [
+        "src/components/",
+        "src/styles/tokens.css",
+        "src/app/preview/",
+        "tests/unit/components/",
+        "tests/e2e/ui/"
+      ],
+      "acceptance": [
+        "Typed buttons/inputs/forms/tables/dialogs/async states and responsive navigation shell",
+        "Keyboard/focus/labels and phone/tablet/desktop browser evidence",
+        "Schema-parsed preview data labeled; no backend/auth logic or dependency/root config changes without coordination",
+        "Independently reviewable from backend implementation"
+      ]
+    },
+    {
+      "code": "core-acceptance",
+      "parent": "testing",
+      "title": "Verify live Auth, tenant isolation, migration and restart milestone",
+      "lane": "core",
+      "requirements": [
+        "F1.1",
+        "F1.5",
+        "F1.6",
+        "Q1",
+        "Q2",
+        "Q4",
+        "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "auth-workspaces",
+        "permission-admin",
+        "ui-foundation"
+      ],
+      "paths": [
+        "tests/integration/",
+        "tests/e2e/",
+        "docs/testing/"
+      ],
+      "acceptance": [
+        "Real signup/session/workspace persistence, unauthenticated/forbidden and two-tenant direct API/RPC/Data API tests",
+        "Migrations fresh/upgrade and application/database restart evidence",
+        "Report exact covered acceptance, retain unimplemented F1 items as not complete"
+      ]
+    },
+    {
+      "code": "lead-milestone",
+      "parent": "testing",
+      "title": "Verify first end-to-end lead protection workflow",
+      "lane": "core",
+      "requirements": [
+        "F3.1",
+        "F3.2",
+        "F3.3",
+        "F3.4",
+        "F3.5",
+        "F3.6",
+        "F3.7",
+        "F3.8",
+        "F3.9",
+        "F4.1",
+        "F5.2",
+        "I4.1",
+        "Q5",
+        "Q11"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "recovery-ui",
+        "escalation-delivery",
+        "dashboard-core",
+        "dashboard-view"
+      ],
+      "paths": [
+        "tests/concurrency/",
+        "tests/e2e/",
+        "docs/testing/"
+      ],
+      "acceptance": [
+        "Real intake → one owner/custody → durable expiry → atomic escalation → real Telegram → history → permitted live metric",
+        "Concurrent/replay/restart/absence boundaries verified",
+        "Do not claim entire CRM/providers complete from this milestone"
+      ]
+    },
+    {
+      "code": "full-acceptance",
+      "parent": "testing",
+      "title": "Verify every original acceptance criterion and security regression",
+      "lane": "core",
+      "requirements": [
+        "ALL"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        },
+        {
+          "id": "R10",
+          "weight_points": 8
+        }
+      ],
+      "dependencies": [
+        "customer-history",
+        "filters-export",
+        "security-regressions",
+        "lead-milestone",
+        "audit-view",
+        "calendar-core",
+        "messaging-core",
+        "payments-core"
+      ],
+      "paths": [
+        "tests/",
+        "docs/requirements/traceability.md",
+        "docs/testing/"
+      ],
+      "acceptance": [
+        "81-ID evidence matrix including all smaller criteria and real-provider behavior",
+        "Accessibility/performance/field/tenant/history/retry/security cross-domain checks",
+        "Only observed full criteria become Verified; unresolved items remain explicit"
+      ]
+    },
+    {
+      "code": "deploy-operations",
+      "parent": "operations",
+      "title": "Prepare reproducible deployment, observability and recovery",
+      "lane": "core",
+      "requirements": [
+        "Q5",
+        "Q6",
+        "Q13",
+        "I5.6",
+        "I5.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold",
+        "jobs-core",
+        "integration-core"
+      ],
+      "paths": [
+        "docs/setup.md",
+        "docs/operations/",
+        ".github/workflows/",
+        "deployment config"
+      ],
+      "acceptance": [
+        "Preview/test deployment and public HTTPS callback verification when authorized",
+        "Secret separation, migration promotion, scheduler/oldest job/error/latency monitoring",
+        "Backup/restore and forward repair evidence; no paid or production changes without required approval"
+      ]
+    },
+    {
+      "code": "textbee-adapter",
+      "parent": "messaging",
+      "title": "Implement pure Textbee adapter, signed webhook validation and normalization",
+      "lane": "provider",
+      "requirements": [
+        "I1.1",
+        "I1.2",
+        "I1.3",
+        "I1.4",
+        "I1.5",
+        "I1.6",
+        "I1.7",
+        "I1.8",
+        "I1.9"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold"
+      ],
+      "paths": [
+        "src/modules/messaging/adapters/textbee.ts",
+        "tests/unit/providers/textbee.test.ts"
+      ],
+      "acceptance": [
+        "Consume D1-owned SmsAdapterV1 / SmsWebhookEventV1; verify exact raw-body X-Signature HMAC-SHA256 using the configured subscription secret",
+        "Normalize API acceptance as queued/pending; retain distinct smsId and smsBatchId, original providerState, inbound receivedAt, UNKNOWN_STATE and carrier/device failures",
+        "Use the provider idempotencyKey; test provider-shaped missing/malformed, forged, duplicate and out-of-order deliveries",
+        "No CRM identity resolution, workspace selection, persistence, retry orchestration or UI; real Android SIM acceptance remains separate"
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7"
+    },
+    {
+      "code": "safepay-adapter",
+      "parent": "payments",
+      "title": "Implement pure Safepay Sandbox adapter, signed webhook validation and normalization",
+      "lane": "provider",
+      "requirements": [
+        "I2.1",
+        "I2.2",
+        "I2.3",
+        "I2.4",
+        "I2.5",
+        "I2.6",
+        "I2.7",
+        "I2.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
+      "dependencies": [
+        "scaffold"
+      ],
+      "paths": [
+        "src/modules/payments/adapters/safepay.ts",
+        "tests/unit/providers/safepay.test.ts"
+      ],
+      "acceptance": [
+        "Consume D1-owned Safepay v1 schemas; verify exact raw-body SHA-512 signature using X-SFPY-SIGNATURE and the separate webhook secret",
+        "Normalize official payment.succeeded / payment.failed / payment.refunded facts; only payment.refunded confirms a refund and refund_amount is required",
+        "Keep tracker, event token, payment/refund refs and untrusted metadata distinct; use official tracker plus passport-token Checkout flow",
+        "Preserve provider timestamps and distinguish application-policy expiry; test official-shape, forged, repeated and out-of-order cases",
+        "No accounting, dedupe persistence, workspace authorization, credentials orchestration, retries or UI; live Sandbox acceptance remains separate"
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5"
+    }
+  ],
+  "publication": "Published provider task issues: textbee-adapter #7, safepay-adapter #5, telegram-adapter #6. Each issue carries the official rubric IDs/weights. Provider adapters consume the D1-owned versioned provider contracts; real provider acceptance remains a running-app gate. Other bulk task/label/project publication remains deferred; this catalog is task definitions, not a second progress board.",
+  "rubric_priority": {
+    "criteria": [
+      "R02",
+      "R03",
+      "R05",
+      "R06",
+      "R07",
+      "R08"
+    ],
+    "points": 64,
+    "note": "First integrated business-workflow priority; not a scope reduction. See docs/requirements/rubric-traceability.md."
+  }
+}

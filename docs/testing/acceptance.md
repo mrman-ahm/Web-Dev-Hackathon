@@ -1,7 +1,10 @@
 # Acceptance and verification strategy
 
 This is planned evidence, not passing test results. [Traceability](../requirements/traceability.md)
-contains all 81 exact acceptance criteria. Tag tests/evidence by those IDs. A product
+contains all 81 exact problem-statement acceptance criteria. The official
+[Participant Rubric](../requirements/rubric-traceability.md) and its
+[judge-facing live checklist](judge-demo-checklist.md) define the score-level evidence
+for each rubric criterion. Tag tests/evidence by source and rubric IDs. A product
 requirement is Verified only when its whole acceptance criterion has observed evidence;
 a single passing unit test, scaffold or green build cannot establish full F1 or I1.
 
@@ -99,3 +102,8 @@ Product release remains blocked until all required acceptance is evidenced; firs
 success is not the complete problem statement. The first integrated milestone is real
 intake → one operational owner/custody → persisted deadline → atomic escalation → actual
 Telegram alert → audit/activity → permitted live dashboard/drill-down.
+
+Monthly reporting checks distinguish gross payments received from signed net collections
+after confirmed refunds, retain currency grouping and permit negative net totals. Five-
+second cadence is verified against installed Supabase/pg_cron and scheduler health during
+implementation; it never guarantees real notification receipt by itself.
