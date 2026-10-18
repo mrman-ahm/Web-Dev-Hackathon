@@ -38,12 +38,14 @@ export const TextbeeMessageEventSchema = z.discriminatedUnion('kind', [
     kind: z.literal('message.received'),
     body: z.string().max(10000),
     optOut: z.enum(['none', 'stop', 'start', 'help']),
+    occurredAt: z.string().optional(),
   }),
   z.strictObject({
     ...textbeeIdentity,
     kind: z.literal('message.status'),
-    state: z.enum(['pending', 'sent', 'delivered', 'failed']),
+    state: z.enum(['pending', 'sent', 'delivered', 'failed', 'unknown']),
     errorCode: z.string().max(100).nullable(),
+    occurredAt: z.string().optional(),
   }),
 ]);
 export type TextbeeMessageEvent = z.infer<typeof TextbeeMessageEventSchema>;
@@ -174,7 +176,7 @@ export class TextbeeAdapter implements ITextbeeAdapter {
         throw new AdapterVerificationError('INVALID_PAYLOAD');
       }
 
-      let state: 'pending' | 'sent' | 'delivered' | 'failed';
+      let state: 'pending' | 'sent' | 'delivered' | 'failed' | 'unknown';
       let errorCode: string | null = null;
 
       if (webhookEvent === 'MESSAGE_SENT') {
@@ -182,8 +184,9 @@ export class TextbeeAdapter implements ITextbeeAdapter {
       } else if (webhookEvent === 'MESSAGE_DELIVERED') {
         state = 'delivered';
       } else if (webhookEvent === 'UNKNOWN_STATE') {
-        state = 'failed';
-        errorCode = 'UNKNOWN_STATE';
+        // Non-terminal unknown status: SMS may still have been delivered per textbee documentation
+        state = 'unknown';
+        errorCode = null;
       } else {
         state = 'failed';
         const rawErr =
@@ -194,6 +197,19 @@ export class TextbeeAdapter implements ITextbeeAdapter {
             : 'MESSAGE_FAILED';
         errorCode = sanitizeCode(rawErr) || 'MESSAGE_FAILED';
       }
+
+      const occurredAt =
+        typeof payload.updatedAt === 'string'
+          ? payload.updatedAt
+          : typeof payload.timestamp === 'string'
+          ? payload.timestamp
+          : typeof payload.sentAt === 'string'
+          ? payload.sentAt
+          : typeof payload.deliveredAt === 'string'
+          ? payload.deliveredAt
+          : typeof payload.failedAt === 'string'
+          ? payload.failedAt
+          : undefined;
 
       const eventSuffix = webhookEvent === 'UNKNOWN_STATE' ? 'unknown' : state;
       const providerEventId = idempotencyKey || `textbee-${eventSuffix}-${smsId}`;
@@ -209,6 +225,7 @@ export class TextbeeAdapter implements ITextbeeAdapter {
         to: recipient || credentials.gatewayNumber,
         state,
         errorCode,
+        ...(occurredAt ? { occurredAt } : {}),
       });
     }
 
