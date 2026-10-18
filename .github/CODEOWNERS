@@ -1,0 +1,5 @@
+# Intentionally inactive: confirmed account-to-developer mapping is missing.
+# See docs/ownership.md and docs/repository-settings.md before activation.
+# Do not infer lanes from repository ownership or authenticated account identity.
+# Both confirmed humans must be eligible on sensitive/shared paths so authors
+# are not their own sole eligible approver. No executable ownership rules yet.

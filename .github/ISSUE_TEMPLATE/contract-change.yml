@@ -1,0 +1,49 @@
+name: Shared contract change
+description: Coordinate an interface change before implementation.
+body:
+- type: markdown
+  attributes:
+    value: Do not include credentials, real customer data, or exploitable security details.
+- type: textarea
+  id: proposal
+  attributes:
+    label: Proposed interface change
+    description: Current/proposed API, event, database or metric semantics; exact shape where known.
+  validations:
+    required: true
+- type: textarea
+  id: consumers
+  attributes:
+    label: Affected consumers and owners
+    description: Modules, Developer 1/2, dependencies and related issue/PR refs.
+  validations:
+    required: true
+- type: textarea
+  id: compatibility
+  attributes:
+    label: Compatibility
+    description: Breaking/additive; compatibility window and risk.
+  validations:
+    required: true
+- type: textarea
+  id: migration
+  attributes:
+    label: Migration and rollback
+    description: Data/consumer migration, ordering, rollback or forward-repair.
+  validations:
+    required: true
+- type: textarea
+  id: reviewers
+  attributes:
+    label: Required reviewers
+    description: Developer 1 technical approval, affected consumer acknowledgements and independent human
+      review.
+  validations:
+    required: true
+- type: textarea
+  id: verification
+  attributes:
+    label: Rollout and verification
+    description: Acceptance criteria, checks, staged rollout and failure recovery.
+  validations:
+    required: true
