@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1440, height: 900 }]) {
   test(`synthetic component preview remains usable at ${viewport.width}px`, async ({ page }) => {
@@ -11,8 +12,10 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 
     if (viewport.width < 1024) {
       await menu.click();
       await expect(page.getByRole('navigation', { name: 'Workspace' })).toBeVisible();
+      await page.getByRole('link', { name: 'Component preview' }).focus();
       await page.keyboard.press('Escape');
       await expect(menu).toHaveAttribute('aria-expanded', 'false');
+      await expect(menu).toBeFocused();
     }
     await page.getByRole('button', { name: 'Open example dialog' }).click();
     const dialog = page.getByRole('dialog', { name: 'Edit saved view' });
@@ -37,4 +40,11 @@ test('skip link and main content support keyboard navigation', async ({ page }) 
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
+});
+
+test('preview has no detectable WCAG A/AA accessibility violations', async ({ page }) => {
+  await page.goto('/preview');
+  await expect(page.getByRole('heading', { name: 'Component workspace' })).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(results.violations).toEqual([]);
 });

@@ -1,13 +1,15 @@
 import { createRef, useState } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '@/components/button';
 import { Input } from '@/components/input';
 import { FormField } from '@/components/form-field';
 import { DataTable } from '@/components/data-table';
 import { Dialog } from '@/components/dialog';
 import { AsyncBoundary } from '@/components/async-boundary';
+
+afterEach(cleanup);
 
 describe('form primitives', () => {
   it('forwards native props and refs and never implicitly submits', async () => {
@@ -46,6 +48,7 @@ describe('DataTable', () => {
     const onPageChange = vi.fn();
     const user = userEvent.setup();
     render(<DataTable caption="Team availability" columns={[{ id: 'name', header: 'Employee', cell: (row: { id: string; name: string }) => row.name }]} rows={[{ id: 'a', name: 'Amina' }]} getRowId={(row) => row.id} page={{ index: 0, size: 10, totalRows: 21 }} onPageChange={onPageChange} />);
+    expect(screen.getByRole('region', { name: 'Team availability table' })).toHaveAttribute('tabindex', '0');
     expect(screen.getByRole('columnheader', { name: 'Employee' })).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: 'Amina' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled();

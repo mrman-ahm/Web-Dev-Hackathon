@@ -1,10 +1,12 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardSnapshot, SessionView } from '@/contracts/ui';
 import { DashboardView } from '@/components/dashboard-view';
 import { AppShell } from '@/components/app-shell';
 import { formatMoney } from '@/components/money';
+
+afterEach(cleanup);
 
 const snapshot: DashboardSnapshot = {
   scope: 'company', workspaceId: 'preview-workspace', asOf: '2026-10-18T09:30:00Z', timezone: 'Asia/Karachi',
