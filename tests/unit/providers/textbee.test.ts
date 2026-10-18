@@ -294,6 +294,46 @@ describe('TextbeeAdapter', () => {
       }
     });
 
+    it('normalizes UNKNOWN_STATE status event explicitly with safe error code', () => {
+      const payload = {
+        smsId: 'sms-out-205',
+        recipient: '+923331112233',
+        deviceId: 'device-android-sim-1',
+        webhookEvent: 'UNKNOWN_STATE',
+      };
+
+      const result = adapter.verifyInbound(createWebhook(payload), credentials);
+      expect(result.kind).toBe('message.status');
+      if (result.kind === 'message.status') {
+        expect(result.state).toBe('failed');
+        expect(result.errorCode).toBe('UNKNOWN_STATE');
+        expect(result.providerEventId).toBe('textbee-unknown-sms-out-205');
+      }
+    });
+
+    it('generates distinct deterministic event IDs for out-of-order callbacks to prevent inbox collisions', () => {
+      const sentPayload = {
+        smsId: 'sms-order-1',
+        recipient: '+923331112233',
+        deviceId: 'device-android-sim-1',
+        webhookEvent: 'MESSAGE_SENT',
+      };
+      const deliveredPayload = {
+        smsId: 'sms-order-1',
+        recipient: '+923331112233',
+        deviceId: 'device-android-sim-1',
+        webhookEvent: 'MESSAGE_DELIVERED',
+      };
+
+      const sentResult = adapter.verifyInbound(createWebhook(sentPayload), credentials);
+      const deliveredResult = adapter.verifyInbound(createWebhook(deliveredPayload), credentials);
+
+      expect(sentResult.providerEventId).toBe('textbee-sent-sms-order-1');
+      expect(deliveredResult.providerEventId).toBe('textbee-delivered-sms-order-1');
+      expect(sentResult.providerEventId).not.toBe(deliveredResult.providerEventId);
+      expect(sentResult.providerMessageRef).toBe(deliveredResult.providerMessageRef);
+    });
+
     it('rejects unsupported webhookEvent with INVALID_PAYLOAD', () => {
       const payload = {
         smsId: 'sms-out-204',
@@ -317,7 +357,7 @@ describe('TextbeeAdapter', () => {
       statusCallbackUrl: 'https://api.crm.example.com/api/webhooks/textbee',
     };
 
-    it('successfully submits SMS and returns confirmed outcome with batch reference', async () => {
+    it('successfully submits SMS and returns confirmed outcome with truthful pending state', async () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -337,7 +377,8 @@ describe('TextbeeAdapter', () => {
       if (outcome.status === 'confirmed') {
         expect(outcome.reference).toBe('batch-res-5001');
         expect(outcome.value.providerMessageRef).toBe('batch-res-5001');
-        expect(outcome.value.state).toBe('sent');
+        // Truthful: Gateway acceptance is pending carrier dispatch, not carrier-sent
+        expect(outcome.value.state).toBe('pending');
         expect(outcome.value.channel).toBe('sms');
       }
 
@@ -447,6 +488,25 @@ describe('TextbeeAdapter', () => {
       expect(outcome.status).toBe('unknown');
       if (outcome.status === 'unknown') {
         expect(outcome.code).toBe('NETWORK_TIMEOUT');
+        expect(outcome.reconciliationReference).toBe(sendCommand.deliveryId);
+      }
+    });
+
+    it('returns unknown outcome when response is missing batch reference without fake ID', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          success: true,
+          data: {}, // Missing smsBatchId and id
+        }),
+      });
+
+      const outcome = await adapter.send(sendCommand, credentials);
+
+      expect(outcome.status).toBe('unknown');
+      if (outcome.status === 'unknown') {
+        expect(outcome.code).toBe('MISSING_PROVIDER_REFERENCE');
         expect(outcome.reconciliationReference).toBe(sendCommand.deliveryId);
       }
     });
