@@ -1,0 +1,62 @@
+name: Feature implementation
+description: Define a scoped implementation task with verifiable acceptance.
+body:
+- type: markdown
+  attributes:
+    value: Do not include credentials, real customer data, or exploitable security details.
+- type: textarea
+  id: goal
+  attributes:
+    label: Goal
+    description: Business outcome and boundaries.
+  validations:
+    required: true
+- type: textarea
+  id: requirements
+  attributes:
+    label: Requirement IDs
+    description: Official IDs, or governance-only.
+  validations:
+    required: true
+- type: textarea
+  id: owner
+  attributes:
+    label: Owner and lane
+    description: Developer 1/2, logical agent role, reviewer; confirm GitHub assignee separately.
+  validations:
+    required: true
+- type: textarea
+  id: dependencies
+  attributes:
+    label: Dependencies
+    description: Issue/PR refs, needed contracts; write none if independent.
+  validations:
+    required: true
+- type: textarea
+  id: scope
+  attributes:
+    label: Scope and affected files
+    description: In scope, excluded work, owned/restricted modules.
+  validations:
+    required: true
+- type: textarea
+  id: contracts
+  attributes:
+    label: Affected contracts
+    description: Consumed/produced interfaces or none; link approved changes.
+  validations:
+    required: true
+- type: textarea
+  id: acceptance
+  attributes:
+    label: Acceptance criteria
+    description: Observable behavior including relevant failure cases.
+  validations:
+    required: true
+- type: textarea
+  id: verification
+  attributes:
+    label: Verification expectations
+    description: Checks and acceptance evidence required for completion.
+  validations:
+    required: true

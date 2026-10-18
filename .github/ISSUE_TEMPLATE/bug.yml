@@ -1,0 +1,48 @@
+name: Bug report
+description: Report reproducible incorrect behavior without sensitive data.
+body:
+- type: markdown
+  attributes:
+    value: Do not include credentials, real customer data, or exploitable security details.
+- type: textarea
+  id: observed
+  attributes:
+    label: Observed behavior
+    description: What occurred; redact customer data and secrets.
+  validations:
+    required: true
+- type: textarea
+  id: expected
+  attributes:
+    label: Expected behavior
+    description: What should occur and any requirement IDs.
+  validations:
+    required: true
+- type: textarea
+  id: reproduction
+  attributes:
+    label: Reproduction steps
+    description: Minimal steps, frequency, and safe synthetic input.
+  validations:
+    required: true
+- type: textarea
+  id: environment
+  attributes:
+    label: Environment
+    description: Commit/ref, browser/runtime, deployment and relevant configuration without credentials.
+  validations:
+    required: true
+- type: textarea
+  id: severity
+  attributes:
+    label: Severity and impact
+    description: Critical, high, medium or low; affected users and any workaround.
+  validations:
+    required: true
+- type: textarea
+  id: evidence
+  attributes:
+    label: Supporting evidence
+    description: Redacted logs, screenshots, correlation IDs or none.
+  validations:
+    required: true

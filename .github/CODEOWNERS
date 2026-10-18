@@ -1,0 +1,5 @@
+# Intentionally inactive: mrman-ahm currently covers both responsibility lanes.
+# Route agent-produced PRs to that confirmed human for review manually.
+# Human-authored sensitive PRs need another qualified human reviewer.
+# See docs/ownership.md and docs/repository-settings.md before activation.
+# Do not create a sole-author code-owner approval gate.
