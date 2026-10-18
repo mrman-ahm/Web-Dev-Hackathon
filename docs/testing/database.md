@@ -108,9 +108,12 @@ by the core HTTP implementation; these results do not claim that later check.
 `tests/database/crm_records.sql` covers tenant foreign keys, row-level security,
 direct-DML revocation, active-session and permission enforcement, user-owned record
 scope, canonical phone uniqueness, expected-version conflicts, audit facts and safe
-archives. Run both database suites against the selected disposable local project with
-`SUPABASE_DB_CONTAINER=supabase_db_<project_id> bash scripts/test-crm-database.sh`.
-The runner defaults to the core foundation container for the normal project. Do not
-point it at a shared or cloud database. The CRM UI uses these same services through its
-workspace page and versioned API; its browser persistence check reloads the page and
+archives. Run both database suites against a selected disposable local project. For
+the CRM pgTAP suite, use an explicit container name; the script has no shared-project
+default:
+
+`SUPABASE_DB_CONTAINER=supabase_db_<isolated_project_id> bash scripts/test-crm-database.sh`.
+The core suite uses the Supabase project selected by the current local config. Never
+point either suite at a shared or cloud database. The CRM UI uses these services through
+its workspace page and versioned API; its browser persistence check reloads the page and
 reads the real database-backed records.
