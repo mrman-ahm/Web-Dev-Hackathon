@@ -20,7 +20,18 @@ export const ProtectedValueSchema=z.discriminatedUnion('visibility',[z.strictObj
 export const OpportunityDtoSchema=VersionedSchema.extend({title:NonemptySchema,contactId:IdSchema,companyId:IdSchema.nullable(),ownerMembershipId:IdSchema.nullable(),pipelineId:IdSchema,stageId:IdSchema,customFields:CustomFieldsSchema,value:ProtectedValueSchema});
 export const LeadDtoSchema=VersionedSchema.extend({contactId:IdSchema,opportunityId:IdSchema.nullable(),source:LeadSourceSchema,state:z.enum(['open','closed']),accountableMembershipId:IdSchema,ownershipMode:OwnershipModeSchema,assignmentVersion:VersionSchema,assignedAt:InstantSchema.nullable(),ackDeadlineAt:InstantSchema.nullable(),acknowledgedAt:InstantSchema.nullable(),recoveryReasons:z.array(RecoveryReasonSchema)});
 export const MessageDtoSchema=VersionedSchema.extend({conversationId:IdSchema,direction:z.enum(['inbound','outbound']),body:z.string().max(10000),state:z.enum(['received','pending','sent','delivered','failed','unknown']),failureCode:z.string().nullable()});
-export const PaymentDtoSchema=VersionedSchema.extend({opportunityId:IdSchema,contactId:IdSchema,requestedBy:IdSchema,money:MoneySchema,state:z.enum(['pending','open','abandoned','expired','failed','paid','partially_refunded','refunded']),checkoutUrl:z.url({protocol:/^https$/}).nullable(),providerReference:z.string().nullable()});
+export const PaymentDtoSchema=VersionedSchema.extend({
+ opportunityId:IdSchema,
+ contactId:IdSchema,
+ requestedBy:IdSchema,
+ money:MoneySchema,
+ state:z.enum(['pending','open','abandoned','expired','policy_expired','failed','paid','partially_refunded','refunded']),
+ checkoutUrl:z.url({protocol:/^https$/}).nullable(),
+ providerTrackerRef:z.string().min(1).max(500).nullable(),
+ providerPaymentRef:z.string().min(1).max(500).nullable(),
+ providerExpiresAt:InstantSchema.nullable(),
+ applicationPolicyExpiresAt:InstantSchema.nullable(),
+});
 export const AppointmentDtoSchema=VersionedSchema.extend({contactId:IdSchema,opportunityId:IdSchema.nullable(),employeeMembershipId:IdSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,state:z.enum(['pending','confirmed','rescheduling','cancelling','cancelled','failed','conflict']),providerReference:z.string().nullable()}).refine(v=>v.endsAt>v.startsAt,'Appointment end must follow start');
 export const IntegrationDtoSchema=VersionedSchema.extend({provider:ProviderSchema,membershipId:IdSchema.nullable(),status:z.enum(['disconnected','connected','error','reconnect_required']),lastSuccessAt:InstantSchema.nullable(),lastError:z.strictObject({code:z.string(),message:z.string()}).nullable(),limits:z.array(z.string())});
 export const AuditDtoSchema=z.strictObject({id:IdSchema,eventType:NonemptySchema,actor:z.strictObject({kind:z.enum(['user','system','provider']),displayName:z.string().nullable()}),target:z.strictObject({type:NonemptySchema,id:IdSchema}),occurredAt:InstantSchema,before:z.record(z.string(),z.unknown()).nullable(),after:z.record(z.string(),z.unknown()).nullable()});

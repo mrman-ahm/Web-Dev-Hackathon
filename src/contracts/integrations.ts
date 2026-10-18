@@ -292,6 +292,21 @@ export const SafepayWebhookPayloadV1Schema = z.discriminatedUnion('type', [
  }).passthrough(),
  z.object({
   ...SafepayWebhookEnvelopeV1Schema,
+  type: z.literal('payment.failed'),
+  data: z.object({
+   tracker: ProviderReferenceV1Schema,
+   intent: z.string().min(1),
+   state: z.string().min(1),
+   customer_email: z.email().optional(),
+   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+   category: z.string().min(1).optional(),
+   code: z.union([z.string().min(1), z.number().int().safe()]).optional(),
+   message: z.string().max(1000).optional(),
+   failed_at: SafepayTimestampV1Schema.optional(),
+  }).passthrough(),
+ }).passthrough(),
+ z.object({
+  ...SafepayWebhookEnvelopeV1Schema,
   type: z.literal('payment.refunded'),
   data: z.object({
    tracker: ProviderReferenceV1Schema,

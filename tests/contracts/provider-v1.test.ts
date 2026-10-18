@@ -18,7 +18,7 @@ import {
   TextbeeWebhookPayloadV1Schema,
 } from '../../src/contracts/integrations';
 import { ProviderSchema } from '../../src/contracts/common';
-import { IntegrationDtoSchema } from '../../src/contracts/api';
+import { IntegrationDtoSchema, PaymentDtoSchema } from '../../src/contracts/api';
 import { DomainEventSchema } from '../../src/contracts/events';
 
 describe('provider v1 support declarations', () => {
@@ -154,6 +154,27 @@ describe('Textbee-compatible SMS v1 contracts', () => {
 });
 
 describe('Safepay-compatible payment v1 contracts', () => {
+  it('distinguishes application policy expiry from provider-confirmed expiry in payment DTOs', () => {
+    const payment = {
+      id: '11111111-1111-4111-8111-111111111111',
+      version: 2,
+      opportunityId: '22222222-2222-4222-8222-222222222222',
+      contactId: '33333333-3333-4333-8333-333333333333',
+      requestedBy: '44444444-4444-4444-8444-444444444444',
+      money: { amountMinor: '5000', currency: 'PKR' },
+      state: 'policy_expired',
+      checkoutUrl: null,
+      providerTrackerRef: 'track_895ca125-8bd3-438e-82ea-ce93e5845933',
+      providerPaymentRef: null,
+      providerExpiresAt: null,
+      applicationPolicyExpiresAt: '2026-10-04T10:12:44.000Z',
+    };
+
+    expect(PaymentDtoSchema.parse(payment)).toEqual(payment);
+    expect(PaymentDtoSchema.safeParse({ ...payment, state: 'expired' }).success).toBe(true);
+    expect(PaymentDtoSchema.safeParse({ ...payment, applicationPolicyExpiresAt: undefined }).success).toBe(false);
+  });
+
   it('requires explicit positive money and currency at checkout creation', () => {
     const officialPayload = {
       merchant_api_key: 'sec_sandbox_example',
@@ -274,6 +295,48 @@ describe('Safepay-compatible payment v1 contracts', () => {
     expect(SafepayWebhookPayloadV1Schema.safeParse({ ...refundPayload, data: { ...refundPayload.data, tracker: undefined } }).success).toBe(false);
     expect(SafepayPaymentEventV1Schema.safeParse({ ...confirmed, providerTrackerRef: null }).success).toBe(false);
     expect(SafepayPaymentEventV1Schema.safeParse({ ...refunded, providerTrackerRef: null }).success).toBe(false);
+  });
+
+  it('accepts official payment.failed webhook shape without requiring amount or payment identity', () => {
+    const failedPayload = {
+      token: 'evt_e7069e13-e4a4-4518-b5ce-ee42e62b6797',
+      version: '2.0.0',
+      merchant_api_key: 'sec_example',
+      type: 'payment.failed',
+      endpoint: 'https://example.com/webhooks/safepay',
+      data: {
+        tracker: 'track_138cf593-3d3f-4d54-b9c6-27a510afb780',
+        intent: 'CYBERSOURCE',
+        state: 'TRACKER_ENROLLED',
+        customer_email: 'hzee@gmail.com',
+        metadata: {},
+        category: 'PAYMENT_METHOD_ERROR',
+        code: 403,
+        message: 'The card was declined.',
+        failed_at: { seconds: 1698754648, nanos: 494424792 },
+      },
+      created_at: { seconds: 1698754648, nanos: 589390626 },
+    };
+
+    const parsed = SafepayWebhookPayloadV1Schema.parse(failedPayload);
+    expect(parsed).toEqual(failedPayload);
+    if (parsed.type !== 'payment.failed') throw new Error('Unexpected Safepay event type');
+
+    const event = {
+      provider: 'safepay',
+      kind: 'payment.failed',
+      providerEventId: parsed.token,
+      occurredAt: '2023-10-31T10:57:28.494424792Z',
+      providerTrackerRef: parsed.data.tracker,
+      providerPaymentRef: null,
+      errorCode: 'PAYMENT_METHOD_ERROR',
+      metadata: parsed.data.metadata ?? null,
+    };
+    expect(SafepayPaymentEventV1Schema.parse(event)).toEqual(event);
+    expect(SafepayWebhookPayloadV1Schema.safeParse({
+      ...failedPayload,
+      data: { ...failedPayload.data, tracker: undefined },
+    }).success).toBe(false);
   });
 
   it('allows absent provider expiry and refund identity without inventing either', () => {
