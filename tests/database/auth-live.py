@@ -1,19 +1,30 @@
 #!/usr/bin/env python3
 """Real local Auth + PostgREST acceptance; never prints credentials or response bodies."""
 import json
+import os
 import secrets
-import subprocess
 import urllib.error
 import urllib.request
 import uuid
-from pathlib import Path
+from urllib.parse import urlsplit
 
-root = Path(__file__).resolve().parents[2]
-status = subprocess.run(['npx', '--yes', '--cache', '/tmp/ubmp-supabase-npm', 'supabase@2.121.0', 'status', '-o', 'json'], cwd=root, capture_output=True, text=True, check=True)
-config = json.loads(status.stdout)
-base = config['API_URL']
-assert base in ('http://127.0.0.1:54321', 'http://localhost:54321'), 'Refusing non-local target'
-key = config.get('PUBLISHABLE_KEY') or config['ANON_KEY']
+base = os.environ.get('SUPABASE_URL', '')
+key = os.environ.get('SUPABASE_ANON_KEY', '')
+parsed_base = urlsplit(base)
+if (
+    parsed_base.scheme != 'http'
+    or parsed_base.hostname not in ('127.0.0.1', 'localhost')
+    or parsed_base.port is None
+    or parsed_base.path not in ('', '/')
+    or parsed_base.username is not None
+    or parsed_base.password is not None
+    or parsed_base.query
+    or parsed_base.fragment
+):
+    raise SystemExit('Set SUPABASE_URL to the isolated local Supabase API origin.')
+if not key:
+    raise SystemExit('Set SUPABASE_ANON_KEY from the isolated local Supabase project.')
+base = f'{parsed_base.scheme}://{parsed_base.netloc}'
 
 def request(path, method='GET', body=None, token=None):
     headers = {'apikey': key, 'Content-Type': 'application/json'}

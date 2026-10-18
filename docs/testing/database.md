@@ -10,21 +10,32 @@ not claim full CRM, lead automation or provider integration acceptance.
 Use the pinned Supabase CLI from the shared application package (`2.121.0` in this
 wave), Docker and Python 3. Work from a checkout containing this migration:
 
+The checked-in config uses project `ubmp_core_foundation` and standard local ports,
+which may belong to an existing shared developer database. Never reset or run database
+tests against that shared project. For fresh verification, use a disposable Supabase
+project with its own project id and ports; pass its database container explicitly to
+the SQL runners below. Run Supabase CLI commands from that isolated project's workdir;
+return to the repository root before running its scripts.
+
 ```bash
+# From the disposable Supabase project's workdir:
 npx supabase start --exclude studio,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor
 npx supabase db reset --local
 npx supabase migration list --local
-bash scripts/test-database.sh
-python3 tests/database/auth-live.py
 npx supabase db advisors --local --type security --level warn
+# Return to the repository root before running the application-owned scripts.
+cd /path/to/checkout
+SUPABASE_DB_CONTAINER=supabase_db_<isolated_project_id> bash scripts/test-database.sh
+SUPABASE_URL=http://127.0.0.1:<isolated_api_port> \
+SUPABASE_ANON_KEY=<isolated_local_anon_key> python3 tests/database/auth-live.py
 ```
 
-`db reset --local` destroys only this local project's existing data; never use
-`--linked` or a cloud database URL for these tests. Local project identifier is
-`ubmp_core_foundation`, API `http://127.0.0.1:54321`, database port `54322`, SMTP
-preview `54324` and shadow database `54328`. Tests accept only the expected local
-API URL. Database SQL tests roll back fixtures. Auth API tests create synthetic
-`example.test` users and retain their workspaces for restart verification.
+Run the CLI commands from the isolated project's config/workdir; `db reset --local`
+destroys that project's data. Never use `--linked` or a cloud database URL for these
+tests. The checked-in project uses API `http://127.0.0.1:54321`, database port `54322`,
+SMTP preview `54324` and shadow database `54328`. Database SQL tests roll back fixtures.
+Auth API tests create synthetic `example.test` users and retain their workspaces for
+restart verification.
 
 CLI status/start output contains development keys: capture it privately when using
 automation; never paste it into chat, logs, PRs or committed files. The live test

@@ -1,7 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 
-const localSupabase = /^http:\/\/(localhost|127\.0\.0\.1):54321\/?$/.test(process.env.SUPABASE_URL ?? '');
+const localSupabase = (() => {
+  try {
+    const url = new URL(process.env.SUPABASE_URL ?? '');
+    return url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)
+      && Boolean(url.port) && url.pathname === '/' && !url.username && !url.password && !url.search && !url.hash;
+  } catch {
+    return false;
+  }
+})();
 
 function decodeSessionCookie(value: string): Record<string, unknown> {
   const json = value.startsWith('base64-')

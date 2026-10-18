@@ -2,7 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 
 const appOrigin = process.env.APP_ORIGIN ?? 'http://localhost:3000';
-const localSupabase = /^http:\/\/(localhost|127\.0\.0\.1):54321\/?$/.test(process.env.SUPABASE_URL ?? '');
+const localSupabase = (() => {
+  try {
+    const url = new URL(process.env.SUPABASE_URL ?? '');
+    return url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)
+      && Boolean(url.port) && url.pathname === '/' && !url.username && !url.password && !url.search && !url.hash;
+  } catch {
+    return false;
+  }
+})();
 
 test('signup, workspace persistence, stale-write rejection and logout use the active cookie session', async ({ request }) => {
   test.skip(!localSupabase, 'This acceptance test writes only to the dedicated local Supabase project.');

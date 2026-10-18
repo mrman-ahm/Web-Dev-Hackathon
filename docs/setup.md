@@ -27,7 +27,9 @@ and HTTP startup were checked locally. Auth/database tests require the separate
 Supabase foundation; do not infer live Auth acceptance from these scaffold checks.
 `npm run db:local`, `npm run db:reset` and `npm run db:test` wrap the pinned CLI;
 they require Docker and the integrated `supabase/config.toml`/migrations. Their live
-verification belongs to the database/Auth delivery. Use CLI `--help` before local
+verification belongs to the database/Auth delivery. `db:reset` destroys data in the
+selected local project: use it only with an isolated disposable project and never
+against a shared developer database. Use CLI `--help` before local
 service commands; do not print generated secret keys into shared logs.
 
 Governance commands:
