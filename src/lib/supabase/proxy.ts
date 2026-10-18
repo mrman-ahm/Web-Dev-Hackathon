@@ -1,5 +1,6 @@
 import 'server-only';
 import { createServerClient } from '@supabase/ssr';
+import { isAuthSessionMissingError } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseServerConfig } from '../env/server';
 
@@ -32,6 +33,7 @@ export async function refreshSupabaseSession(request: NextRequest): Promise<Next
     },
   });
 
-  await supabase.auth.getClaims();
+  const { error } = await supabase.auth.getClaims();
+  if (error && !isAuthSessionMissingError(error)) throw error;
   return response;
 }
