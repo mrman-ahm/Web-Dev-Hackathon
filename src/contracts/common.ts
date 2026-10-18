@@ -2,7 +2,8 @@ import { z } from 'zod';
 export const IdSchema = z.uuid();
 export const InstantSchema = z.iso.datetime({offset:false});
 export const VersionSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
-export const CurrencySchema = z.string().regex(/^[A-Z]{3}$/);
+const supportedCurrencies = new Set(Intl.supportedValuesOf('currency'));
+export const CurrencySchema = z.string().regex(/^[A-Z]{3}$/).refine(value => supportedCurrencies.has(value), 'Expected an ISO currency supported by this runtime');
 export const TimezoneSchema = z.string().min(1).max(100).refine(value => {
  try { new Intl.DateTimeFormat('en', {timeZone:value}); return true; } catch { return false; }
 }, 'Expected an IANA time zone');

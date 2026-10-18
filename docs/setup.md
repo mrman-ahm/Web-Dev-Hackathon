@@ -1,9 +1,36 @@
 # Setup
 
-## Governance-only checkout
+## Local application foundation
 
-Prerequisites: Git, Python 3.11+, and access to this private GitHub repository. In a
-cloned checkout, these governance verification commands are supported:
+Prerequisites: Git, Node **24.19.0** (`.nvmrc`), npm **11.17.0**, Python 3.11+ for
+governance checks, and repository access. Runtime dependencies are exact and
+`package-lock.json` is the single application lockfile.
+
+```sh
+npm ci
+npm run dev
+```
+
+Open `http://localhost:3000`. The landing page describes foundation status; it does not
+claim live CRM/provider features. The scaffold requires no provider credentials.
+
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm start
+```
+
+The initial scaffold installation, lint, strict types, contract tests, production build
+and HTTP startup were checked locally. Auth/database tests require the separate
+Supabase foundation; do not infer live Auth acceptance from these scaffold checks.
+`npm run db:local`, `npm run db:reset` and `npm run db:test` wrap the pinned CLI;
+they require Docker and the integrated `supabase/config.toml`/migrations. Their live
+verification belongs to the database/Auth delivery. Use CLI `--help` before local
+service commands; do not print generated secret keys into shared logs.
+
+Governance commands:
 
 ```sh
 python3 -m venv /tmp/ubmp-governance-venv
@@ -12,11 +39,14 @@ python3 -m venv /tmp/ubmp-governance-venv
 git diff --check
 ```
 
-The governance tool dependency is pinned separately from future product dependencies.
-An existing environment with that exact PyYAML version can also run the checker.
-No Node package, app startup, database, or provider setup exists yet. Foundation B/D
-must select runtime/package manager versions, commit one lockfile, supply scripts,
-and verify fresh installation/startup before publishing those commands.
+The governance tool dependency remains separately pinned. An existing environment
+with that exact PyYAML version can also run the checker. Database/provider acceptance
+requires the corresponding foundation and actual external services; installing SDKs
+does not establish integration completeness.
+
+The lint setup uses explicit TypeScript, React Hooks and accessibility rules. The
+current compatible ESLint 9 line emits an upstream end-of-support warning; do not
+force incompatible peer upgrades. The initial pinned tree has no npm audit advisories.
 
 ## Local configuration and source document
 
