@@ -9,11 +9,67 @@ import {
   SafepayCreateTrackerResponseV1Schema,
   SafepayPaymentEventV1Schema,
   SafepayWebhookPayloadV1Schema,
+  MessagingProviderV1Schema,
+  PaymentProviderV1Schema,
+  NotificationProviderV1Schema,
   SmsSendCommandV1Schema,
   SmsWebhookEventV1Schema,
   TelegramSendMessageResponseV1Schema,
   TextbeeWebhookPayloadV1Schema,
 } from '../../src/contracts/integrations';
+import { ProviderSchema } from '../../src/contracts/common';
+import { IntegrationDtoSchema } from '../../src/contracts/api';
+import { DomainEventSchema } from '../../src/contracts/events';
+
+describe('provider v1 support declarations', () => {
+  it('accepts only the approved v1 providers for each port', () => {
+    expect(MessagingProviderV1Schema.parse('textbee')).toBe('textbee');
+    expect(MessagingProviderV1Schema.safeParse('twilio').success).toBe(false);
+    expect(PaymentProviderV1Schema.parse('safepay')).toBe('safepay');
+    expect(PaymentProviderV1Schema.safeParse('stripe').success).toBe(false);
+    expect(NotificationProviderV1Schema.parse('telegram')).toBe('telegram');
+  });
+
+  it('exposes only active providers through current connection DTO and event contracts', () => {
+    const integration = {
+      id: '11111111-1111-4111-8111-111111111111',
+      version: 1,
+      membershipId: null,
+      status: 'connected',
+      lastSuccessAt: null,
+      lastError: null,
+      limits: [],
+    };
+    const connectionEvent = {
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'integration.connection_changed',
+      schemaVersion: 1,
+      workspaceId: '22222222-2222-4222-8222-222222222222',
+      aggregate: { type: 'integration', id: '33333333-3333-4333-8333-333333333333', version: 1 },
+      occurredAt: '2026-10-18T08:00:00Z',
+      actor: { kind: 'provider', membershipId: null },
+      correlationId: '44444444-4444-4444-8444-444444444444',
+      causationId: null,
+      payload: {
+        connectionId: '55555555-5555-4555-8555-555555555555',
+        provider: 'textbee',
+        fromStatus: 'disconnected',
+        toStatus: 'connected',
+      },
+    };
+
+    for (const provider of ['textbee', 'safepay', 'telegram', 'google']) {
+      expect(ProviderSchema.parse(provider)).toBe(provider);
+      expect(IntegrationDtoSchema.safeParse({ ...integration, provider }).success).toBe(true);
+      expect(DomainEventSchema.safeParse({ ...connectionEvent, payload: { ...connectionEvent.payload, provider } }).success).toBe(true);
+    }
+    for (const provider of ['twilio', 'stripe']) {
+      expect(ProviderSchema.safeParse(provider).success).toBe(false);
+      expect(IntegrationDtoSchema.safeParse({ ...integration, provider }).success).toBe(false);
+      expect(DomainEventSchema.safeParse({ ...connectionEvent, payload: { ...connectionEvent.payload, provider } }).success).toBe(false);
+    }
+  });
+});
 
 describe('Textbee-compatible SMS v1 contracts', () => {
   it('keeps unknown delivery reports unresolved and preserves message and batch refs', () => {

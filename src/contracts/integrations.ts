@@ -102,8 +102,8 @@ export interface CalendarAdapter {
  * adapters. Legacy Twilio/Stripe schemas above remain available during migration. */
 const ProviderReferenceV1Schema = z.string().trim().min(1).max(500);
 const PositiveMoneyV1Schema = MoneySchema.refine(value => value.amountMinor !== '0', 'Amount must be positive');
-export const MessagingProviderV1Schema = z.enum(['twilio', 'textbee']);
-export const PaymentProviderV1Schema = z.enum(['stripe', 'safepay']);
+export const MessagingProviderV1Schema = z.enum(['textbee']);
+export const PaymentProviderV1Schema = z.enum(['safepay']);
 export const NotificationProviderV1Schema = z.enum(['telegram']);
 export type MessagingProviderV1 = z.infer<typeof MessagingProviderV1Schema>;
 export type PaymentProviderV1 = z.infer<typeof PaymentProviderV1Schema>;
