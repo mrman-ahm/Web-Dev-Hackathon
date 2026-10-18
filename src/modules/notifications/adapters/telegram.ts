@@ -73,7 +73,15 @@ export class TelegramAdapter implements NotificationAdapter {
           ok?: boolean;
           result?: { message_id?: number | string };
         };
-        const messageId = String(data?.result?.message_id || `msg_${Date.now()}`);
+        const rawId = data?.result?.message_id;
+        if (rawId === undefined || rawId === null) {
+          return {
+            status: 'unknown',
+            code: 'MISSING_PROVIDER_REFERENCE',
+            reconciliationReference: input.deliveryId,
+          };
+        }
+        const messageId = String(rawId);
         return {
           status: 'confirmed',
           value: {

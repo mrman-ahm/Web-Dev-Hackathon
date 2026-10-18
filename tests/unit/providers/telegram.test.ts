@@ -187,6 +187,25 @@ describe('TelegramAdapter', () => {
       }
     });
 
+    it('returns unknown outcome when 200 response lacks message_id without fake reference', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          result: {}, // Missing message_id
+        }),
+      });
+
+      const outcome = await adapter.send(command, token);
+
+      expect(outcome.status).toBe('unknown');
+      if (outcome.status === 'unknown') {
+        expect(outcome.code).toBe('MISSING_PROVIDER_REFERENCE');
+        expect(outcome.reconciliationReference).toBe(command.deliveryId);
+      }
+    });
+
     it('never logs or leaks bot token in error returns or exceptions', async () => {
       global.fetch = vi.fn().mockRejectedValue(new Error(`Failed to request https://api.telegram.org/bot${token}/sendMessage`));
 
