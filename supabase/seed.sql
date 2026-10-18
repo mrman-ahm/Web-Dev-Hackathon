@@ -1,0 +1,2 @@
+-- Intentionally empty: no credentials, customer data or fake operational records.
+-- Real local Auth signup creates its own workspace and initial configuration.
