@@ -66,3 +66,34 @@ changes (or none), tests and outcomes, requirement IDs, limitations, open blocke
 and the next owner/action. Sensitive and cross-domain PRs require the other human's
 review. Never self-approve or merge without authorized human approval and green checks.
 For resets, follow [documentation recovery](docs/documentation.md).
+
+## Agent Efficiency & Tool-Call Discipline
+
+**Core principle: Maximize useful engineering output per tool call, token, and operation. Avoid redundant work without weakening correctness.**
+
+1. **No redundant inspection.** Do not repeatedly run `git status`, `git log`, repository searches, directory listings, or file reads when the relevant state is already known and has not changed.
+2. **No unnecessary Git operations.** When asked to commit or push completed work, perform the required operation directly if the repository state and target branch are already established. Do not repeat unrelated checks, reviews, fetches, or full test suites before every push.
+3. **Verification must be risk-proportionate.** Run meaningful tests after implementation changes. Perform additional verification when behavior changes, tests fail, or security-sensitive code is modified. Do not repeatedly execute identical passing checks without a relevant change.
+4. **Use targeted inspection.** Read relevant files and functions rather than dumping entire repositories. Search narrowly before expanding scope.
+5. **Avoid speculative investigation.** Every tool call should support a concrete implementation, verification, debugging, or coordination objective.
+6. **Batch independent operations.** Combine compatible read operations and independent checks when doing so is safe. Avoid unnecessary sequential calls.
+7. **No repeated explanations.** Do not continuously summarize architecture or previously established decisions. Reference existing documents and report only material changes.
+8. **Bound retries.** If a command or external tool fails, diagnose the specific error. Do not repeat the same failing call without changing the approach or identifying a transient failure.
+9. **Avoid unnecessary agent spawning.** Delegate only when a task is sufficiently independent or specialized to justify the coordination cost.
+10. **Respect proven results.** Once a command, test, or provider interaction has been verified, do not revalidate it without a reason, such as changed code, configuration, environment, or dependencies.
+11. **Prefer implementation over ceremony.** After the necessary context and contracts are established, proceed with useful engineering work instead of creating additional planning cycles, status reports, or documentation.
+12. **Preserve essential safety gates.** Never skip tests needed for correctness, Git conflict prevention, security checks, webhook validation, database migrations, or acceptance verification solely to reduce tool calls.
+
+### Operational rule
+
+Before each tool call, consider:
+
+- Is this information already available?
+- Has relevant state changed?
+- Will this call affect the next engineering decision?
+- Can the same result be obtained more directly?
+- Is this verification necessary for the risk involved?
+
+If a call provides no meaningful new information or required action, omit it.
+
+**Efficiency means eliminating redundant work, not eliminating necessary engineering rigor.**
