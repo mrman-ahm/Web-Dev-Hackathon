@@ -1,8 +1,9 @@
 # Local database foundation
 
-This foundation implements only identity/workspace prerequisites, current-session
-checks, permission resolution, initial configuration and audit writes. It does not
-claim complete F1, CRM, lead automation or provider integration acceptance.
+The initial database foundation implements identity/workspace prerequisites,
+current-session checks, permission resolution, configuration and audit writes. The
+CRM records migration adds tenant-scoped company/contact storage and commands; it does
+not claim full CRM, lead automation or provider integration acceptance.
 
 ## Start and verify
 
@@ -101,3 +102,15 @@ Observed locally: PostgreSQL 17.11; fresh reset and migration history alignment 
 55 SQL assertions and 18 real local Auth/Data API checks passed. The local security
 advisor reported no issues. Application-process restart acceptance is coordinated
 by the core HTTP implementation; these results do not claim that later check.
+
+## CRM records verification
+
+`tests/database/crm_records.sql` covers tenant foreign keys, row-level security,
+direct-DML revocation, active-session and permission enforcement, user-owned record
+scope, canonical phone uniqueness, expected-version conflicts, audit facts and safe
+archives. Run both database suites against the selected disposable local project with
+`SUPABASE_DB_CONTAINER=supabase_db_<project_id> bash scripts/test-crm-database.sh`.
+The runner defaults to the core foundation container for the normal project. Do not
+point it at a shared or cloud database. The CRM UI uses these same services through its
+workspace page and versioned API; its browser persistence check reloads the page and
+reads the real database-backed records.

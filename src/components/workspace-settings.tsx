@@ -62,6 +62,7 @@ export function WorkspaceSettings({ user, workspace: initialWorkspace }: { user:
           <p className="ub-eyebrow">Workspace configuration</p>
           <h1>Workspace settings</h1>
           <p className="ub-muted">Changes are saved to this workspace and checked against its current version.</p>
+          <p><a className="ub-button" href={`/workspaces/${workspace.id}/crm`}>Open CRM records</a></p>
         </div>
         <form className="ub-panel ub-stack-lg" onSubmit={save} aria-busy={pending}>
           <h2>Workspace details</h2>
