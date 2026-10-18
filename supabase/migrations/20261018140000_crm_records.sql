@@ -112,11 +112,6 @@ with check (
   and (company_id is null or exists (select 1 from public.customer_companies c where c.workspace_id = contacts.workspace_id and c.id = contacts.company_id and c.archived_at is null))
 );
 
--- append_audit_entry returns its inserted id. Let the command role see only the
--- current actor's row so INSERT ... RETURNING works without granting audit.view.
-create policy crm_command_own_audit_return on public.audit_entries for select to ubmp_command
-using (private.member_id(workspace_id) is not null and actor_membership_id = private.member_id(workspace_id));
-
 -- Stable cursor list functions. Data is returned only through the user's scoped session.
 create function public.list_crm_companies(p_workspace_id uuid, p_before_at timestamptz, p_before_id uuid, p_limit integer)
 returns table(id uuid, name text, website text, version bigint, created_at timestamptz)

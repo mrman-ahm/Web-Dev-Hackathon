@@ -45,6 +45,7 @@ select is((select after_json->>'value' from public.get_audit_entries(:'audit_w2'
 select is((select after_json->'line_items'->0->>'amount_minor' from public.get_audit_entries(:'audit_w2','opportunity.value_changed',null,null,null,null,null,100)), '[restricted]','Nested financial values are masked for viewers without crm.values.view');
 select is((select after_json->>'title' from public.get_audit_entries(:'audit_w2','opportunity.value_changed',null,null,null,null,null,100)), 'After','Nonfinancial audit diff fields remain visible');
 select is((select actor_display_name from public.get_audit_entries(:'audit_w2','opportunity.value_changed',null,null,null,null,null,100)), 'Audit Two','Audit page resolves the actor profile only within the authorized workspace');
+select set_config('request.jwt.claims',jsonb_build_object('sub','41000000-0000-4000-8000-000000000002','session_id','42000000-0000-4000-8000-000000000002','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 select throws_ok(format('select * from public.get_audit_entries(%L)',:'audit_w1'),'PT403','FORBIDDEN','A member cannot read another workspace audit history');
 select occurred_at as audit_cursor_time,id as audit_cursor_id from public.get_audit_entries(:'audit_w2',null,null,null,null,null,null,1) limit 1 \gset
 select is((select count(*)::int from public.get_audit_entries(:'audit_w2',null,null,null,null,:'audit_cursor_time',:'audit_cursor_id',1)),1,'Audit cursor continues in strict descending timestamp/id order');
