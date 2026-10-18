@@ -13,12 +13,13 @@
 
 - GitHub access to the repository.
 - Node 24.19.0 and npm 11.17.0 for local work (.nvmrc and package.json).
-- A Supabase project and Vercel project.
+- A [Supabase project](https://supabase.com/dashboard) and [Vercel project](https://vercel.com/dashboard).
+- Google Cloud credentials are managed at [Google Cloud API credentials](https://console.cloud.google.com/apis/credentials), but this candidate has no Google OAuth callback or Calendar route.
 - Google, Safepay Sandbox, textbee and Telegram accounts are useful only after their missing application routes/adapters are implemented. Do not enter their credentials for this candidate; no such integration configuration is consumed by the integrated application.
 
 ## 1. Supabase project and migrations
 
-1. Create a Supabase project. In Project Settings → API, copy the project URL and publishable/anon key. Keep the service_role key private.
+1. Create a Supabase project. Use the project Connect dialog for the URL and publishable key, or find keys in Settings → API Keys. Keep any service-role/secret key private. The current Supabase dashboard documents these locations in its [API keys guide](https://supabase.com/docs/guides/getting-started/api-keys).
 2. From a trusted local checkout on the candidate branch, install dependencies with npm ci, authenticate the Supabase CLI, then link the project and apply the versioned migrations:
 
        npx supabase login
@@ -43,9 +44,9 @@
 | Variable | Required | Source / purpose | Visibility |
 | --- | --- | --- | --- |
 | APP_ORIGIN | Core runtime | Exact app origin; Vercel deployment domain | Server-side; HTTPS in deployment |
-| SUPABASE_URL | Core runtime | Supabase Project Settings → API | Server-side |
-| SUPABASE_ANON_KEY | Core runtime | Supabase Project Settings → API publishable/anon key | Server-side in this app; never substitute service role |
-| SUPABASE_SERVICE_ROLE_KEY | Optional, internal job-dispatch route only | Supabase Project Settings → API service-role key | Secret; server-only |
+| SUPABASE_URL | Core runtime | Supabase project Connect dialog | Server-side |
+| SUPABASE_ANON_KEY | Core runtime | Supabase project Connect dialog publishable/anon key | Server-side in this app; never substitute service role |
+| SUPABASE_SERVICE_ROLE_KEY | Optional, internal job-dispatch route only | Supabase Settings → API Keys, legacy service_role key | Secret; server-only |
 | JOBS_DISPATCH_SECRET_CURRENT | Optional, internal job-dispatch route only | Generate a unique random secret and configure caller and Vercel consistently | Secret; server-only |
 | JOBS_DISPATCH_SECRET_PREVIOUS | Optional rotation overlap | Previous dispatch signer during rotation | Secret; server-only |
 | PLAYWRIGHT_BASE_URL | Tests only | Browser test target; defaults to localhost | Not a production setting |
