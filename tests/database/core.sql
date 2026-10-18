@@ -47,6 +47,9 @@ select throws_ok(format('update public.memberships set base_level=''user'' where
 select ok(not has_table_privilege('authenticated','public.workspaces','UPDATE'),'User direct workspace DML revoked');
 select ok(not has_table_privilege('authenticated','public.audit_entries','INSERT'),'User direct audit INSERT revoked');
 select ok(not has_function_privilege('anon','public.update_workspace(uuid,bigint,text,text,text)','EXECUTE'),'Anonymous command execution denied');
+select ok(not has_function_privilege('anon','public.create_permission_role(uuid,text,text[])','EXECUTE'),'Anonymous role administration denied');
+select ok(not has_table_privilege('authenticated','public.role_permissions','INSERT'),'Direct grant-table mutation denied');
+select ok(not has_table_privilege('authenticated','public.membership_permission_overrides','DELETE'),'Direct override-table mutation denied');
 select ok(not exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public'),'No business tables published raw to Realtime');
 select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 set local role authenticated;
@@ -57,6 +60,15 @@ select is((select count(*)::int from public.memberships),1,'Membership RLS canno
 select is((select count(*)::int from public.get_workspace(:'w1')),1,'Own workspace lookup works');
 select throws_ok(format('select * from public.get_workspace(%L)',:'w2'),'PT403','FORBIDDEN','Cross-tenant RPC denied');
 select is((select count(*)::int from public.get_my_permissions(:'w1')),(select count(*)::int from public.permission_catalog),'Owner resolves trusted catalog permissions');
+select ok((select count(*)=2 from public.role_permissions where workspace_id=:'w2' and role_id=:'r2' and permission_key in ('integrations.calendar.connect_own','notifications.destination.manage_own')),'User defaults explicitly grant own calendar and notification destination actions');
+select ok(not exists(select 1 from public.role_permissions where workspace_id=:'w2' and role_id=:'r2' and permission_key in ('integrations.manage','integrations.history.view','notifications.failures.view')),'Own destination grants do not imply workspace credential or delivery administration');
+select is((public.create_permission_role(:'w1','Manager',array['crm.contacts.view','crm.values.view'])->>'name'),'Manager','Owner creates a role with grants independent of its name');
+select id as manager_role from public.roles where workspace_id=:'w1' and name='Manager' \gset
+select is((public.update_permission_role(:'w1',:'manager_role',1,'Manager',array['crm.contacts.view'])->>'version')::int,2,'Role grant edit uses optimistic version and advances version');
+select throws_ok(format('select public.create_permission_role(%L,''Bad role'',array[''not.a.catalog.permission''])',:'w1'),'PT400','VALIDATION_FAILED','Unknown permission key rejected by database');
+select throws_ok(format('select public.update_permission_role(%L,%L,1,''Cross tenant'',array[]::text[])',:'w1',:'r2'),'PT404','NOT_FOUND','Role identifier from another workspace is not disclosed');
+select throws_ok(format('select public.replace_member_permission_overrides(%L,%L,1,''[]''::jsonb)',:'w1',:'m1'),'PT403','FORBIDDEN','Owner permission overrides are protected');
+select is((select count(*)::int from public.audit_entries where workspace_id=:'w1' and event_type in ('permissions.role.created','permissions.role.updated')),2,'Role mutations append audit entries');
 select is((select version::int from public.update_workspace(:'w1',1,'Updated One','UTC','USD')),2,'Optimistic workspace update advances version');
 select throws_ok(format('select * from public.update_workspace(%L,1,''Overwrite'',''UTC'',''USD'')',:'w1'),'PT409','STALE_VERSION','Stale edit rejected');
 select throws_ok(format('select * from public.update_workspace(%L,2,''Bad'',''Unknown/Zone'',''USD'')',:'w1'),'PT400','VALIDATION_FAILED','Untrusted timezone rejected');
@@ -65,18 +77,36 @@ select throws_ok('update public.workspaces set name=''bypass''','42501',null,'Di
 select throws_ok('delete from public.audit_entries','42501',null,'Authenticated audit deletion denied');
 reset role;
 -- Remove permissions using trusted administrative fixture, then observe current database state.
-insert into memberships(workspace_id,user_id,base_level,role_id) values(:'w2','10000000-0000-0000-0000-000000000001','user',:'r2');
+insert into memberships(workspace_id,user_id,base_level,role_id) values(:'w2','10000000-0000-0000-0000-000000000001','user',:'r2') returning id as w2_member \gset
 select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 set local role authenticated;
 select throws_ok(format('select * from public.update_workspace(%L,1,''Forbidden'',''UTC'',''USD'')',:'w2'),'PT403','FORBIDDEN','Active ordinary member cannot manage workspace');
 reset role;
 insert into role_permissions(workspace_id,role_id,permission_key) values(:'w2',:'r2','workspace.manage');
-insert into membership_permission_overrides(workspace_id,membership_id,permission_key,effect) select workspace_id,id,'workspace.manage','deny' from memberships where workspace_id=:'w2' and user_id='10000000-0000-0000-0000-000000000001';
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000002','session_id','20000000-0000-0000-0000-000000000002','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
+set local role authenticated;
+select is((public.update_permission_role(:'w2',:'r2',1,'User',array[]::text[])->>'version')::int,2,'Current role grant can be revoked independently of its name');
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
+set local role authenticated;
+select is((select count(*)::int from public.get_my_permissions(:'w2') where key='workspace.manage'),0,'Role grant revocation is visible to the current membership immediately');
+select throws_ok(format('select * from public.update_workspace(%L,1,''Denied'',''UTC'',''USD'')',:'w2'),'PT403','FORBIDDEN','Revoked role grant denies the next protected command');
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000002','session_id','20000000-0000-0000-0000-000000000002','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
+set local role authenticated;
+select (public.update_permission_role(:'w2',:'r2',2,'User',array['workspace.manage'])->>'version')::int;
+select public.replace_member_permission_overrides(:'w2',:'w2_member',1,'[{"key":"workspace.manage","effect":"deny"}]'::jsonb);
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 set local role authenticated;
 select is((select count(*)::int from public.get_my_permissions(:'w2') where key='workspace.manage'),0,'Member deny overrides role allow immediately');
-select throws_ok(format('select * from public.update_workspace(%L,1,''Denied'',''UTC'',''USD'')',:'w2'),'PT403','FORBIDDEN','Role allow cannot bypass member deny');
+select throws_ok(format('select * from public.update_workspace(%L,1,''Denied'',''UTC'',''USD'')',:'w2'),'PT403','FORBIDDEN','Member deny blocks a role grant immediately');
 reset role;
-delete from membership_permission_overrides where workspace_id=:'w2';
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000002','session_id','20000000-0000-0000-0000-000000000002','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
+set local role authenticated;
+select public.replace_member_permission_overrides(:'w2',:'w2_member',2,'[]'::jsonb);
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 set local role authenticated;
 select is((select version::int from public.update_workspace(:'w2',1,'Permitted by grant','UTC','USD')),2,'Explicit permission permits command independently of base-level name');
 reset role;
