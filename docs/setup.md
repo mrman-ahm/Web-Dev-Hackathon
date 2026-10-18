@@ -50,13 +50,21 @@ force incompatible peer upgrades. The initial pinned tree has no npm audit advis
 
 ## Local configuration and source document
 
-`.env.example` has comments only because no runtime variables are consumed yet.
-When implementation introduces variables, document exact names, purpose, required vs
-optional, server/public scope and safe blank placeholders in the same PR. Put local
-values in ignored `.env.local`; never put privileged values in public-prefixed variables.
-Use separate test/development/production resources and a secret manager for deployed
-values. Avoid real customer data. Configure real publicly reachable HTTPS webhooks
-only when provider features exist, and document sandbox limits then.
+Copy `.env.example` to ignored `.env.local` and set the following values to use the
+Auth/workspace HTTP routes:
+
+| Variable | Scope | Purpose |
+| --- | --- | --- |
+| `APP_ORIGIN` | server-only | Exact browser origin used for cookie-write Origin checks and PKCE redirects; use `http://localhost:3000` locally and HTTPS in deployment. |
+| `SUPABASE_URL` | server-only | Supabase project URL; local foundation uses `http://127.0.0.1:54321`. |
+| `SUPABASE_ANON_KEY` | server-only | Supabase anon/publishable project key. Never use `service_role`. |
+
+Values are read lazily when an Auth route runs, so lint, tests and production builds do
+not require runtime configuration. Put local values only in ignored `.env.local`; never
+put privileged values in public-prefixed variables. Use separate test/development/
+production resources and a secret manager for deployed values. Avoid real customer
+data. Configure publicly reachable HTTPS webhooks only when provider features exist,
+and document sandbox limits then.
 
 The original DOCX remains untracked and unchanged in the original developer checkout.
 Foundation B adds a byte-identical versioned copy at `docs/requirements/problem-statement.docx`

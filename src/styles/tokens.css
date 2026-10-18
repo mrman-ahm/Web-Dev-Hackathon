@@ -102,6 +102,66 @@
 .ub-dialog-close { justify-self: end; }
 .ub-appointment-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
 .ub-appointment-list li { padding-top: 1rem; border-top: 1px solid var(--ub-border); display: grid; gap: 0.25rem; }
+.ub-home { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.72fr); background: var(--ub-canvas); color: var(--ub-ink); font-family: var(--ub-font); }
+.ub-home-top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem clamp(1.25rem, 5vw, 5rem); border-bottom: 1px solid var(--ub-border); background: var(--ub-surface); }
+.ub-home-mark { font-weight: 800; letter-spacing: 0.12em; }
+.ub-home-copy { align-self: center; display: grid; justify-items: start; gap: 1.5rem; max-width: 56rem; padding: clamp(2rem, 6vw, 6rem); }
+.ub-home-copy h1 { max-width: 12ch; margin: 0; font-size: clamp(2.5rem, 6.4vw, 5.25rem); line-height: 0.98; letter-spacing: -0.06em; }
+.ub-home-intro { max-width: 38rem; color: var(--ub-muted); font-size: clamp(1.0625rem, 2vw, 1.25rem); line-height: 1.6; }
+.ub-home-note { max-width: 42rem; color: var(--ub-muted); font-size: 0.8125rem; line-height: 1.6; }
+.ub-home .ub-button { color: #fff; text-decoration: none; }
+.ub-home .ub-button[data-variant="secondary"] { color: var(--ub-ink); }
+.ub-home-principle { align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 1rem; padding: clamp(2rem, 5vw, 5rem); background: var(--ub-ink); color: #f4f7f4; }
+.ub-home-principle .ub-eyebrow { color: #c4d4ca; }
+.ub-home-principle h2 { max-width: 14ch; margin: 0; font-size: clamp(1.75rem, 3.2vw, 3rem); line-height: 1.05; letter-spacing: -0.04em; }
+.ub-home-principle p:last-child { max-width: 28rem; color: #d8e3dc; line-height: 1.65; }
+.ub-auth-layout { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.9fr); background: var(--ub-canvas); color: var(--ub-ink); font-family: var(--ub-font); }
+.ub-auth-layout :focus-visible, .ub-workspace-shell :focus-visible, .ub-home :focus-visible { outline: 3px solid var(--ub-focus); outline-offset: 3px; }
+.ub-auth-main { width: 100%; max-width: 52rem; align-self: center; justify-self: center; display: grid; gap: 1.5rem; padding: clamp(1.25rem, 5vw, 4.5rem); }
+.ub-auth-heading { display: grid; justify-items: start; gap: 0.875rem; }
+.ub-auth-heading h1 { margin: 0; font-size: clamp(2rem, 4.5vw, 3.5rem); line-height: 1.02; letter-spacing: -0.055em; }
+.ub-auth-heading > p:last-child { max-width: 36rem; line-height: 1.6; }
+.ub-auth-panel { display: grid; gap: 1.25rem; padding: clamp(1.25rem, 3.5vw, 2rem); }
+.ub-auth-form { display: grid; gap: 1rem; }
+.ub-auth-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(5rem, 0.45fr); gap: 1rem; }
+.ub-auth-footer { color: var(--ub-muted); font-size: 0.875rem; }
+.ub-auth-footer a { color: var(--ub-accent); font-weight: 650; text-underline-offset: 0.2em; }
+.ub-auth-error, .ub-auth-message { padding: 0.75rem 1rem; border-radius: var(--ub-radius); font-size: 0.875rem; line-height: 1.5; }
+.ub-auth-error { border: 1px solid #d9aaa5; background: var(--ub-danger-surface); color: var(--ub-danger); }
+.ub-auth-message { border: 1px solid #a9c3b4; background: #edf5ef; color: #174d38; }
+.ub-auth-story { display: flex; flex-direction: column; justify-content: space-between; gap: 3rem; padding: clamp(2rem, 5vw, 5rem); background: var(--ub-ink); color: #f4f7f4; }
+.ub-auth-story > div { display: grid; align-content: center; flex: 1; gap: 1.25rem; }
+.ub-auth-story-kicker { color: #c4d4ca; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.6875rem; font-weight: 750; }
+.ub-auth-story h2 { max-width: 12ch; margin: 0; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.02; letter-spacing: -0.055em; }
+.ub-auth-story > div > p:last-child, .ub-auth-story-note { max-width: 30rem; color: #d8e3dc; line-height: 1.65; }
+.ub-auth-story-note { font-size: 0.8125rem; }
+.ub-workspace-shell { min-height: 100dvh; background: var(--ub-canvas); color: var(--ub-ink); font-family: var(--ub-font); }
+.ub-workspace-header { min-height: 4.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem clamp(1rem, 4vw, 3rem); border-bottom: 1px solid var(--ub-border); background: var(--ub-surface); }
+.ub-workspace-header > .ub-row { justify-content: flex-end; }
+.ub-workspace-header .ub-signout { display: grid; justify-items: start; gap: 0.25rem; }
+.ub-workspace-header .ub-auth-error { max-width: 20rem; padding: 0.375rem 0.5rem; }
+.ub-workspace-main { min-width: 0; max-width: 82rem; margin: 0 auto; padding: clamp(1rem, 4vw, 3rem); }
+.ub-workspace-main h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+.ub-workspace-list { list-style: none; display: grid; gap: 0.75rem; margin: 0; padding: 0; }
+.ub-workspace-list a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.375rem 1rem; padding: 1rem 1.25rem; border: 1px solid var(--ub-border); border-radius: var(--ub-radius); background: var(--ub-surface); color: var(--ub-ink); text-decoration: none; }
+.ub-workspace-list a:hover { border-color: var(--ub-accent); background: #f9fbf9; }
+.ub-workspace-list a > span:first-child { font-weight: 700; overflow-wrap: anywhere; }
+.ub-workspace-list small { grid-column: 1; color: var(--ub-muted); }
+.ub-workspace-list a > span:last-child { grid-column: 2; grid-row: 1 / span 2; color: var(--ub-accent); font-size: 1.25rem; }
+.ub-signout { display: grid; justify-items: start; gap: 0.5rem; }
+@media (max-width: 800px) {
+  .ub-home { grid-template-columns: minmax(0, 1fr); }
+  .ub-home-top { grid-column: 1; }
+  .ub-home-copy { padding: clamp(2rem, 8vw, 4rem) 1.25rem; }
+  .ub-home-principle { padding: 2rem 1.25rem; }
+  .ub-auth-layout { grid-template-columns: minmax(0, 1fr); }
+  .ub-auth-main { order: 1; }
+  .ub-auth-story { order: 2; min-height: 18rem; }
+}
+@media (max-width: 420px) {
+  .ub-auth-row { grid-template-columns: minmax(0, 1fr); }
+  .ub-workspace-header > .ub-row { width: 100%; justify-content: space-between; }
+}
 @media (min-width: 768px) {
   .ub-content { padding: 2rem; }
   .ub-topbar { padding: 1rem 2rem; }
