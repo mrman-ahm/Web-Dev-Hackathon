@@ -27,6 +27,6 @@ runtime results. [Acceptance strategy](testing/acceptance.md) records each regre
 Primary human approval on 2026-10-18 accepts the technical contracts and listed ADRs,
 finite escalation/late recovery, durable five-second configuration, custody and signed
 monthly net totals. Required targeted corrections: two-human ownership (D1 all UI/core,
-D2 Twilio/Stripe/Telegram adapters), no invented account mapping, separate gross/refund/net
+D2 Textbee/Safepay/Telegram adapters), no invented account mapping, separate gross/refund/net
 currency totals. These are applied without reopening the approved architecture. Hosted
 schedule health and actual provider delivery remain implementation evidence requirements.

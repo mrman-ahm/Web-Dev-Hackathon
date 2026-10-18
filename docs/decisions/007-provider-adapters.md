@@ -4,7 +4,7 @@ Status: **Accepted by primary human on 2026-10-18**. Date: 2026-10-18.
 
 ## Context
 
-Twilio, Stripe, Google Calendar and Telegram have different authenticity, idempotency, error and OAuth rules; real sandbox acceptance is mandatory.
+Textbee, Safepay, Google Calendar and Telegram have different authenticity, idempotency, error and OAuth rules; real sandbox acceptance is mandatory.
 
 ## Decision
 

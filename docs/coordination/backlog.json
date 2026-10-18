@@ -228,6 +228,12 @@
         "Q13",
         "Q14"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "architecture"
       ],
@@ -259,6 +265,16 @@
         "Q1",
         "Q6"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
@@ -288,6 +304,16 @@
         "F1.2",
         "F1.6"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces",
         "permission-admin"
@@ -316,6 +342,16 @@
         "Q2",
         "Q3"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces"
       ],
@@ -342,6 +378,16 @@
         "Q2",
         "Q3"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "permission-admin"
       ],
@@ -365,6 +411,16 @@
         "F2.1",
         "Q4",
         "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -390,6 +446,16 @@
       "requirements": [
         "F2.2",
         "F2.3"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "crm-records",
@@ -417,6 +483,16 @@
         "F1.4",
         "Q9"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "crm-records",
         "custom-fields",
@@ -441,6 +517,20 @@
       "requirements": [
         "F2.7",
         "F2.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "crm-records",
@@ -471,6 +561,16 @@
         "F2.4",
         "F2.5"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "crm-records"
       ],
@@ -497,6 +597,16 @@
         "Q8",
         "Q10"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "pipeline-core",
         "custom-fields",
@@ -521,6 +631,20 @@
         "F3.1",
         "Q3",
         "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "crm-records",
@@ -548,6 +672,16 @@
         "F3.8",
         "Q4",
         "Q5"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -579,6 +713,16 @@
         "F3.8",
         "Q5"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "lead-engine"
       ],
@@ -605,6 +749,16 @@
         "Q7",
         "Q8",
         "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "ack-escalation",
@@ -635,6 +789,24 @@
         "I5.7",
         "I5.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "permission-admin",
         "jobs-core",
@@ -663,6 +835,20 @@
         "I5.5",
         "I5.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces",
         "audit-core"
@@ -682,7 +868,7 @@
     {
       "code": "messaging-core",
       "parent": "messaging",
-      "title": "Implement real Twilio messaging and lead capture",
+      "title": "Implement real Textbee messaging and lead capture",
       "lane": "core",
       "requirements": [
         "I1.1",
@@ -696,27 +882,42 @@
         "I1.9",
         "F3.1"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "integration-core",
         "lead-intake",
-        "twilio-adapter"
+        "textbee-adapter"
       ],
       "paths": [
         "src/modules/messaging/",
-        "src/app/api/webhooks/twilio/",
+        "src/app/api/webhooks/textbee/",
         "src/app/(workspace)/messages/"
       ],
       "acceptance": [
-        "Official signature/original URL validation; real phone inbound/reply/status callbacks",
+        "Verify Textbee X-Signature over exact raw body; process a real Android SIM inbound message and send a real CRM reply",
+        "Reconcile smsId and smsBatchId per recipient; preserve receivedAt, UNKNOWN_STATE and carrier/device failures without false failure or regression",
         "Workspace phone matching + message/lead replay dedupe and conversation permissions",
-        "Opt-out checks at enqueue/send; failed/unknown preserved with controlled retry",
+        "Opt-out checks at enqueue/send; failures and unknown outcomes remain visible with safe retry/reconciliation",
         "Assignment context and new-owner conversation access tested"
       ]
     },
     {
       "code": "payments-core",
       "parent": "payments",
-      "title": "Implement Stripe test Checkout, webhook facts and refunds",
+      "title": "Implement Safepay Sandbox Checkout, verified payment facts and refunds",
       "lane": "core",
       "requirements": [
         "I2.1",
@@ -728,20 +929,31 @@
         "I2.7",
         "I2.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "integration-core",
         "pipeline-core",
         "messaging-core",
-        "stripe-adapter"
+        "safepay-adapter"
       ],
       "paths": [
         "src/modules/payments/",
-        "src/app/api/webhooks/stripe/",
+        "src/app/api/webhooks/safepay/",
         "supabase/migrations/"
       ],
       "acceptance": [
-        "Real hosted test payment and refund drive stored state automatically",
-        "Raw-body signatures, duplicate/distinct object events and order reconciliation",
+        "Real Safepay Sandbox hosted checkout and refund drive persisted status automatically through verified webhooks",
+        "Raw-body SHA-512 signatures, duplicate event IDs, tracker correlation, out-of-order payment/refund events and no duplicate ledger entries",
+        "Only payment.refunded plus provider refund_amount confirms refund completion; application-policy expiry is distinct from provider-confirmed expiry",
         "Failed/expired/abandoned outcomes and requester/contact/provider traceability",
         "No card data; signed monthly net and lifetime collected values reconcile"
       ]
@@ -759,6 +971,16 @@
         "I3.5",
         "I3.6",
         "I3.7"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "integration-core",
@@ -786,6 +1008,16 @@
         "I4.3",
         "I4.4"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
@@ -797,7 +1029,8 @@
         "Implements core-owned normalized send port without DB/secret/retry/domain orchestration",
         "Safe plain text/URLs, Telegram 429/retry_after/permanent/unknown result normalization",
         "Provider-specific unit/contract tests; no UI work or fake real-delivery claim"
-      ]
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6"
     },
     {
       "code": "escalation-delivery",
@@ -810,6 +1043,20 @@
         "I4.2",
         "I4.3",
         "I4.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "ack-escalation",
@@ -835,6 +1082,16 @@
         "F4.2",
         "F4.3"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces"
       ],
@@ -859,6 +1116,16 @@
         "Q7",
         "Q8",
         "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "scaffold",
@@ -886,6 +1153,16 @@
         "F5.4",
         "F5.5",
         "Q12"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "ack-escalation",
@@ -919,6 +1196,16 @@
         "Q8",
         "Q10"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold",
         "ui-foundation"
@@ -942,6 +1229,16 @@
         "Q11",
         "Q2",
         "F1.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "permission-admin",
@@ -968,6 +1265,12 @@
         "Q8",
         "Q10",
         "Q14"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "scaffold"
@@ -999,6 +1302,24 @@
         "Q2",
         "Q4",
         "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -1037,6 +1358,24 @@
         "Q5",
         "Q11"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "recovery-ui",
         "escalation-delivery",
@@ -1049,7 +1388,7 @@
         "docs/testing/"
       ],
       "acceptance": [
-        "Real intake \u2192 one owner/custody \u2192 durable expiry \u2192 atomic escalation \u2192 real Telegram \u2192 history \u2192 permitted live metric",
+        "Real intake → one owner/custody → durable expiry → atomic escalation → real Telegram → history → permitted live metric",
         "Concurrent/replay/restart/absence boundaries verified",
         "Do not claim entire CRM/providers complete from this milestone"
       ]
@@ -1061,6 +1400,48 @@
       "lane": "core",
       "requirements": [
         "ALL"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        },
+        {
+          "id": "R10",
+          "weight_points": 8
+        }
       ],
       "dependencies": [
         "customer-history",
@@ -1095,6 +1476,12 @@
         "I5.6",
         "I5.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold",
         "jobs-core",
@@ -1113,9 +1500,9 @@
       ]
     },
     {
-      "code": "twilio-adapter",
+      "code": "textbee-adapter",
       "parent": "messaging",
-      "title": "Implement pure Twilio adapter, signed webhook validation and normalization",
+      "title": "Implement pure Textbee adapter, signed webhook validation and normalization",
       "lane": "provider",
       "requirements": [
         "I1.1",
@@ -1128,24 +1515,35 @@
         "I1.8",
         "I1.9"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
       "paths": [
-        "src/modules/messaging/adapters/twilio.ts",
-        "tests/unit/providers/twilio.test.ts"
+        "src/modules/messaging/adapters/textbee.ts",
+        "tests/unit/providers/textbee.test.ts"
       ],
       "acceptance": [
-        "Consume core-owned provider schemas; official SDK verification using original bytes/URL as applicable",
-        "Normalize verified events, outbound responses, temporary/permanent/unknown errors without domain/persistence/credentials orchestration",
-        "Meaningful valid/forged/replayed/out-of-order fixture tests with synthetic credentials; real provider completeness remains separate acceptance",
-        "No frontend, Auth/database/shared-contract/root dependency changes without approved coordination"
-      ]
+        "Consume D1-owned SmsAdapterV1 / SmsWebhookEventV1; verify exact raw-body X-Signature HMAC-SHA256 using the configured subscription secret",
+        "Normalize API acceptance as queued/pending; retain distinct smsId and smsBatchId, original providerState, inbound receivedAt, UNKNOWN_STATE and carrier/device failures",
+        "Use the provider idempotencyKey; test provider-shaped missing/malformed, forged, duplicate and out-of-order deliveries",
+        "No CRM identity resolution, workspace selection, persistence, retry orchestration or UI; real Android SIM acceptance remains separate"
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7"
     },
     {
-      "code": "stripe-adapter",
+      "code": "safepay-adapter",
       "parent": "payments",
-      "title": "Implement pure Stripe adapter, signed webhook validation and normalization",
+      "title": "Implement pure Safepay Sandbox adapter, signed webhook validation and normalization",
       "lane": "provider",
       "requirements": [
         "I2.1",
@@ -1157,20 +1555,44 @@
         "I2.7",
         "I2.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
       "paths": [
-        "src/modules/payments/adapters/stripe.ts",
-        "tests/unit/providers/stripe.test.ts"
+        "src/modules/payments/adapters/safepay.ts",
+        "tests/unit/providers/safepay.test.ts"
       ],
       "acceptance": [
-        "Consume core-owned provider schemas; official SDK verification using original bytes/URL as applicable",
-        "Normalize verified events, outbound responses, temporary/permanent/unknown errors without domain/persistence/credentials orchestration",
-        "Meaningful valid/forged/replayed/out-of-order fixture tests with synthetic credentials; real provider completeness remains separate acceptance",
-        "No frontend, Auth/database/shared-contract/root dependency changes without approved coordination"
-      ]
+        "Consume D1-owned Safepay v1 schemas; verify exact raw-body SHA-512 signature using X-SFPY-SIGNATURE and the separate webhook secret",
+        "Normalize official payment.succeeded / payment.failed / payment.refunded facts; only payment.refunded confirms a refund and refund_amount is required",
+        "Keep tracker, event token, payment/refund refs and untrusted metadata distinct; use official tracker plus passport-token Checkout flow",
+        "Preserve provider timestamps and distinguish application-policy expiry; test official-shape, forged, repeated and out-of-order cases",
+        "No accounting, dedupe persistence, workspace authorization, credentials orchestration, retries or UI; live Sandbox acceptance remains separate"
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5"
     }
   ],
-  "publication": "Bulk GitHub publication deferred per primary human request to focus local implementation; issue #4 tracks coordination. This catalog specifies tasks, not a second live progress board."
+  "publication": "Published provider task issues: textbee-adapter #7, safepay-adapter #5, telegram-adapter #6. Each issue carries the official rubric IDs/weights. Provider adapters consume the D1-owned versioned provider contracts; real provider acceptance remains a running-app gate. Other bulk task/label/project publication remains deferred; this catalog is task definitions, not a second progress board.",
+  "rubric_priority": {
+    "criteria": [
+      "R02",
+      "R03",
+      "R05",
+      "R06",
+      "R07",
+      "R08"
+    ],
+    "points": 64,
+    "note": "First integrated business-workflow priority; not a scope reduction. See docs/requirements/rubric-traceability.md."
+  }
 }

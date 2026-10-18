@@ -24,6 +24,19 @@ rewriting it. Developer 1 retains final technical authority. Agents implement an
 propose; evidence and authorized human review establish correctness.
 Foundation A is governance only. Do not implement future foundations without a task.
 
+The official [Participant Rubric](docs/requirements/participant-rubric.docx) is the
+evaluation standard alongside the problem statement. The problem statement defines
+product scope; the rubric defines how judges score the running application. Use stable
+criteria R01–R10 and their exact full-mark conditions in
+[rubric traceability](docs/requirements/rubric-traceability.md), and link relevant
+criteria and official point weights from Foundation C tasks. A plan, mock provider,
+hardcoded/prepared record or visible-only control is not end-to-end acceptance evidence.
+Real provider sandbox/test modes are acceptable; fake or hardcoded providers can earn
+at most Partial for R05–R08. Keep every demo checklist item honest: a failed claimed
+item lowers the R10 score. Foundation D and later implementation plans must optimize
+for working, persisted, bad-input-safe end-to-end flows and recorded evidence, not just
+visible features. Do not reduce the original problem-statement scope to fit the rubric.
+
 ## Before editing
 
 1. Read the assigned issue/task, this file, [contribution flow](CONTRIBUTING.md), and
@@ -62,9 +75,10 @@ workspaces; logical roles do not require permanent agent processes.
 Use the issue for scope/dependencies, repository contracts for interfaces, PR for
 changes/evidence, and decisions for accepted rationale. No duplicate progress ledger.
 Each completion report/PR states summary, files/modules changed, contract/migration
-changes (or none), tests and outcomes, requirement IDs, limitations, open blockers,
+changes (or none), tests and outcomes, requirement IDs, rubric criteria and evidence,
+limitations, open blockers,
 and the next owner/action. Developer 1 uses GPT and owns all UI plus core systems; Developer 2 uses Gemini on
-another machine for Twilio/Stripe/Telegram adapters only. Follow
+another machine for Textbee/Safepay/Telegram adapters only. Follow
 [ownership](docs/ownership.md); do not infer human identities from GitHub accounts.
 Dispatch suitable independent GPT tasks with explicit ownership and isolated worktrees.
 Never claim a remote Gemini agent has started without evidence. Never self-approve or merge without authorized human approval and green checks.

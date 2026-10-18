@@ -38,7 +38,7 @@ custom roles (including Manager) supply grants independently of names. Per-membe
 beats role allow; Owner administrative safety cannot be removed by a lower actor.
 Default employee grants include own calendar connect/disconnect and own notification
 destination management; these are explicit integration permissions and can be revoked.
-Workspace bot/Twilio/Stripe credentials remain integrations.manage only. An Admin cannot
+Workspace bot/Textbee/Safepay credentials remain integrations.manage only. An Admin cannot
 perform OAuth consent as another employee. Export/view/edit are distinct; record read scope and field rights remain necessary even
 when a broad endpoint permission passes. Invitation roles/tokens cannot grant Owner.
 
@@ -65,8 +65,12 @@ log ciphertext/plaintext dumps, tokens, card data, customer messages or credenti
 OAuth states are one-use and actor-bound; refresh/revocation failure is actionable.
 Provider signatures validate original request material before trusting any payload IDs.
 Replay resistance combines signature timestamp checks where supported with durable event
-and semantic object dedupe. Twilio lacks generic timestamp replay protection, so its
-provider IDs and domain idempotency are essential; never invent a signature timestamp.
+and semantic object dedupe. Textbee lacks generic timestamp replay protection, so its
+per-subscription raw-body HMAC-SHA256 plus stable `idempotencyKey` and domain idempotency
+are essential; never invent a signature timestamp. Safepay uses SHA-512 HMAC over the
+original bytes and its merchant event token for event dedupe. Its `data.tracker` is only a
+checkout correlation reference; payment and refund identities stay separate and may be
+absent. Missing provider metadata is never replaced by fabricated identifiers.
 
 Ordinary user requests do not use service role. Worker/provider contexts are narrowly
 scoped, authenticated separately and map workspace from verified connection metadata.

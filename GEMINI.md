@@ -7,7 +7,7 @@ Use the same [engineering standards](docs/engineering-standards.md) and
 [ownership policy](docs/ownership.md). Developer 2 works on a separate machine; no agent
 process there is assumed controlled by the GPT supervisor.
 
-Your lane is **independent backend provider adapters only**: Twilio, Stripe, Telegram,
+Your lane is **independent backend provider adapters only**: Textbee, Safepay Sandbox, Telegram,
 provider-specific webhook validation, event normalization, error classification and tests.
 You receive no frontend/UI assignments. Developer 1 owns all UI, database, domain logic,
 Auth/permissions, lead automation, Google Calendar, credential/job orchestration and deployment.
@@ -19,12 +19,13 @@ Credentials arrive as explicit server-only inputs; never log them or return them
 Provider SDK types stay inside adapters. Mocks test logic; real-provider completeness needs
 separate actual evidence. Preserve failed/unknown outcomes rather than false success.
 
-Owned paths and task numbers are in [Developer 2 handoff](docs/agent-handoffs/developer-2-start.md)
-when Foundation C/D publishes it. Until that document exists, use the assigned GitHub task
-and approved API/provider contracts; do not assume a missing handoff authorizes new scope.
-Root dependencies, shared contracts, schemas, routing, CI and environment changes require
-an explicit proposal/coordination. Request needed interface changes via the contract-change
-issue template. Keep independent work moving while documenting precise blockers.
+Current task IDs/issues, adapter branch/PR and exact contract mappings are in the
+[Developer 2 handoff](docs/agent-handoffs/developer-2-start.md). The provider-neutral
+contract PR #9 is at commit `2ad1adb` and awaits human review; consume its v1 ports after
+acceptance. Continue the focused corrections on existing PR #8 and issues #5, #6 and #7.
+Do not implement a second adapter or change shared contracts, schemas, routing, CI or
+environment ownership. Propose any needed interface change on the existing contract PR
+and keep independent adapter work moving while documenting precise blockers.
 
 Use a dedicated issue branch/worktree, relevant provider tests and a scoped PR with changed
 files, contract impact, requirement IDs, commands/results, limitations and next action.

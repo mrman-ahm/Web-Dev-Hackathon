@@ -21,7 +21,7 @@ human merge-gated; implement on approved dependency branches and integrate local
 
 ## Global constraints
 
-D1/GPT owns all UI and core, plus Google Calendar. D2/Gemini owns Twilio/Stripe/Telegram
+D1/GPT owns all UI and core, plus Google Calendar. D2/Gemini owns Textbee/Safepay/Telegram
 adapters, provider validation/normalization/errors/tests only. Do not infer GitHub human
 mappings. No production changes, paid resources, self-merge, fake provider success or
 secrets in output/Git. Keep commits local; batch GitHub publication per latest instruction.
@@ -113,3 +113,12 @@ Consume Tasks 1–2 interfaces; coordinate any genuine contract change first.
 Bootstrap rollback/orphans; refresh and revoked-session bypass; own vs cross-tenant direct
 API/RPC/Data API; protected values in DTO/preview; signed net/refund currencies; independent
 adapter ports; no shell/key leakage in local setup. Product completeness is not implied.
+
+
+## Participant rubric acceptance standard
+
+Foundation D and follow-on plans use the official [rubric traceability](../../requirements/rubric-traceability.md) and [judge demo checklist](../../testing/judge-demo-checklist.md). Optimize for full end-to-end behavior in the running application: real persisted data, bad-input and authorization behavior, duplicates/retries, refresh/restart durability and visible provider outcomes. Do not count mocks, prepared records, UI-only controls or a green unit suite as full marks.
+
+The first integrated workflow priority is R02 CRM (12) + R03 lead assignment/escalation (14) + R05 messaging (12) + R06 payments (12) + R07 Calendar (10) + R08 notifications (4) = **64 points**. Keep R01 security (10), R04 audit/dashboard (8), R09 quality (10), R10 demo/understanding (8), and every original problem-statement requirement in scope.
+
+Implementation order follows the dependency graph: finish Auth/workspace and configurable permission/audit prerequisites; build stored CRM and pipeline configuration; implement durable lead intake, ownership, acknowledgement, escalation and recovery; connect real provider adapters through D1-owned persistence/orchestration and complete Textbee, Safepay, Google Calendar and Telegram sandbox paths; then reconcile dashboards, quality, full acceptance and demo evidence. A criterion remains unverified until its complete live checklist passes.

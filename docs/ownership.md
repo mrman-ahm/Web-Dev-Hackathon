@@ -12,8 +12,8 @@ ownership, connector identity and earlier staffing assumptions do not establish 
 | All frontend/UI/UX, design tokens, shell, navigation, components, dashboards/audit presentation and domain screens | Developer 1 / GPT | Shared typed interfaces; accessibility and responsive verification |
 | Architecture, contracts, database/migrations/RLS, Auth/workspaces, permissions, CRM, leads/escalation/recovery, jobs, audit, metrics/realtime | Developer 1 / GPT | Sensitive/cross-domain human review; one database steward |
 | Google OAuth/Calendar, security, application integration, testing and deployment | Developer 1 / GPT | Provider documentation and real acceptance evidence |
-| `src/modules/messaging/adapters/twilio.ts` and bounded provider helper files | Developer 2 / Gemini | Consume core-owned adapter schemas; no persistence/assignment changes |
-| `src/modules/payments/adapters/stripe.ts` and bounded provider helper files | Developer 2 / Gemini | Provider signatures, normalization and SDK calls only; no money-domain decisions |
+| `src/modules/messaging/adapters/textbee.ts` and bounded provider helper files | Developer 2 / Gemini | Consume core-owned adapter schemas; no persistence/assignment changes |
+| `src/modules/payments/adapters/safepay.ts` and bounded provider helper files | Developer 2 / Gemini | Provider signatures, normalization and SDK calls only; no money-domain decisions |
 | `src/modules/notifications/adapters/telegram.ts` and bounded provider helper files | Developer 2 / Gemini | Provider send/error classification only; no retry/delivery orchestration |
 | Provider-specific unit/contract tests under `tests/unit/providers/` | Developer 2 / Gemini | Real external acceptance is coordinated by Developer 1 |
 | Credentials orchestration, HTTP webhook routes, inbox/outbox persistence, domain effects, retries and API/UI integration | Developer 1 / GPT | Adapters receive validated commands/credentials through explicit ports |

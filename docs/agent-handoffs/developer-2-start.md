@@ -1,87 +1,74 @@
-# Developer 2 — Gemini backend provider adapters
+# Developer 2 — Gemini provider adapters
 
-You are Developer 2 on a separate machine. Your complete lane is **Twilio, Stripe and
-Telegram provider adapters, provider-specific webhook validation, normalized events,
-error handling and tests**. No frontend/UI tasks are assigned. Developer 1/GPT owns
-all frontend/core/database/persistence/credentials/retries/domain rules, Google Calendar
-and shared contracts. Read [GEMINI](../../GEMINI.md), [AGENTS](../../AGENTS.md),
-[ownership](../ownership.md) and [integration specification](../features/integrations.md).
+Read [AGENTS](../../AGENTS.md), [GEMINI](../../GEMINI.md), [ownership](../ownership.md),
+[engineering standards](../engineering-standards.md), and the active
+[integration specification](../features/integrations.md) before editing.
+The official [Participant Rubric](../requirements/rubric-traceability.md) is the acceptance
+standard. Provider mocks and unit tests do not establish live rubric acceptance.
 
-## Dependency and initial task references
+## Current integration checkpoint
 
-Architecture issue #2 / approved PR #3 supplies technical contracts; coordination issue
-#4 is the current aggregate tracker. Task codes in [catalog](../coordination/backlog.json):
-`twilio-adapter`, `stripe-adapter`, `telegram-adapter`. Per-task GitHub issues will be
-published in one batch; do not invent numbers. Human account mapping remains unconfirmed.
-This document prepares your work; the GPT supervisor does not claim your agent started.
+The approved provider set is Textbee for SMS, Safepay Sandbox for payments, and Telegram
+for escalation notifications. The existing combined adapter work is in
+[`feat/pakistan-provider-adapters`](https://github.com/mrman-ahm/Web-Dev-Hackathon/tree/feat/pakistan-provider-adapters)
+at reported commit `819823a`; draft integration PR #8 targets
+[`feat/core-foundation`](https://github.com/mrman-ahm/Web-Dev-Hackathon/tree/feat/core-foundation).
+Do not create a duplicate adapter implementation or merge either branch automatically.
+Continue the focused corrections on the existing adapter branch/PR and report the new SHA.
 
-The prerequisite is the committed shared scaffold/ports from Developer 1. If the baseline
-is only local, obtain its published branch or local repository/bundle from Developer 1;
-a fresh remote clone cannot see unpublished commits. Inspect the actual package/lockfile
-and `src/contracts/integrations.ts` before implementation. Missing ports are a dependency,
-not permission to define a second interface.
+The provider-neutral contract PR #9 is at
+[`feat/provider-neutral-contracts`](https://github.com/mrman-ahm/Web-Dev-Hackathon/tree/feat/provider-neutral-contracts),
+commit [`2ad1adb`](https://github.com/mrman-ahm/Web-Dev-Hackathon/commit/2ad1adb), and awaits
+human review. It targets `feat/core-foundation`; it is not merged. Once its interfaces are
+accepted, consume `src/contracts/integrations.ts` as the shared executable source of truth.
+The active provider enums are Textbee/Safepay/Telegram/Google; Twilio and Stripe are not
+active choices. Published scoped issues are Textbee #7 (R05, 12 points), Safepay #5 (R06,
+12 points), and Telegram #6 (R08, 4 points). These criteria also contribute to R09; weights
+are not additive. Corrective requests are recorded in those issue threads and PR #8.
 
-## Starting commands
+## Contract-specific corrections required
 
-After the shared scaffold commit is available in your clone, select one task and its
-approved baseline; use the same Node/npm versions specified by the repository. At task
-start synchronize once with the provided baseline, then:
+### Textbee
 
-```sh
-npm ci
-git switch -c feat/provider-twilio-adapter
-npm run test -- tests/unit/providers/twilio.test.ts
-npm run typecheck
-```
+- A successful send HTTP response maps to `SmsSubmissionV1 { state: 'queued', providerBatchRef: smsBatchId }`. It is not carrier send or handset delivery.
+- For callbacks, map Textbee `idempotencyKey` to `providerEventId`, `smsId` to `providerMessageRef`, and `smsBatchId` to `providerBatchRef`. Keep both provider references; per-recipient callbacks must reconcile against the same outbound batch.
+- Map inbound `receivedAt` to normalized `occurredAt` and persist it downstream; webhook arrival time must not replace it for delayed offline-phone uploads.
+- Map `UNKNOWN_STATE` to `kind: 'message.unknown'` and preserve the original status in `providerState`. Do not convert an unrecognized provider state into failure.
+- Preserve carrier/device failure codes and statuses, handle duplicate IDs and out-of-order callbacks without state regression, and reject malformed or forged signatures. Verify lowercase-hex HMAC-SHA256 over exact raw request bytes with the connection's subscription secret.
 
-Use `feat/provider-stripe-adapter` / `feat/provider-telegram-adapter` for the other packages,
-or actual issue-number branch names after publication. The test command above is the
-required targeted convention supplied by the scaffold; confirm package scripts exist.
-Write meaningful tests, observe the missing behavior, implement, and run relevant checks.
-No continuous fetching/pushing or full-suite reruns without a relevant change.
+### Safepay Sandbox
 
-## Owned and restricted files
+- Use the approved checkout flow and return separate `providerTrackerRef`, `providerExpiresAt`, and `applicationPolicyExpiresAt`. Never equate the checkout tracker with a payment reference.
+- Verify SHA-512 HMAC against the original body bytes. Normalize the top-level merchant event `token` as stable `providerEventId`; keep `data.tracker`, payment reference and refund reference distinct. Missing identities remain explicitly nullable or reject the event; never synthesize UUIDs or IDs from the current time.
+- Only official `payment.refunded` with a valid `data.refund_amount` confirms a refund. Refund initiation is not completion. Use provider event timestamps where present; do not substitute processing time for financial time.
+- Provider-confirmed expiry maps separately from the application's own checkout policy deadline.
 
-Own only the assigned adapter and bounded provider-specific helpers beneath:
+### Telegram
 
-- `src/modules/messaging/adapters/twilio.ts`
-- `src/modules/payments/adapters/stripe.ts`
-- `src/modules/notifications/adapters/telegram.ts`
-- Matching `tests/unit/providers/{twilio,stripe,telegram}.test.ts` and synthetic fixtures.
+- A send is confirmed only for `ok: true` and a positive integer `result.message_id`.
+- Keep 429 retry timing, blocked-chat classification and unknown network outcomes. Redact bot-token-bearing URLs from errors and logs.
 
-Consume `MessagingAdapter`, `PaymentsAdapter`, `NotificationAdapter`, credentials,
-commands/events and `ProviderOutcome` from core-owned `src/contracts/integrations.ts`.
-Never import DB/service-role clients or domain repositories. Do not change root packages,
-shared contracts, migrations/RLS/Auth, HTTP route ownership, job/retry orchestration,
-credentials storage, UI or Google Calendar. Request exact interface/dependency changes
-in the contract-change issue/PR, then continue independent owned work.
+## Ownership and acceptance
 
-## Concrete acceptance
+Own only the provider adapter files and provider-specific fixtures/tests:
+`src/modules/messaging/adapters/textbee.ts`,
+`src/modules/payments/adapters/safepay.ts`,
+`src/modules/notifications/adapters/telegram.ts`, and their matching tests under
+`tests/unit/providers/`. Do not change shared contracts, routes, credentials, migrations,
+workspace authorization, persistence, retry orchestration, accounting, UI or lead/contact
+rules; propose an interface change in the existing contract PR first.
 
-Twilio: official SDK verifies exact configured external URL/all original parameters or
-raw JSON body as applicable; altered/forged request rejected safely. Normalize inbound
-message/status events and outbound send responses/errors. Preserve provider references,
-known uncertain submission and permanent/temporary classification. No contact/lead creation,
-workspace selection or opt-out business decisions in the adapter; core orchestrates them.
+GPT owns authenticated provider connections, encrypted credential storage, signed webhook
+routes, durable inbox/outbox and retries, CRM/customer linkage, payment reconciliation and
+ledger entries, notification orchestration, and settings/status UI. Coordinate with the
+core owner when the approved contract changes or an actual integration failure reveals a
+boundary issue.
 
-Stripe: official SDK verifies original bytes/signature/tolerance; normalize supported
-stable-version payment/session/refund facts and Checkout response/errors. No hosted card
-data is stored/logged; never trust browser redirects as payment. Semantic accounting,
-metadata/workspace validation, duplicate persistence and retries remain core responsibilities.
+Use provider-shaped fixtures for adapter behavior and report exact commands/results. The
+current `74 passing` and TypeScript success are Gemini-reported results, not independently
+verified live acceptance. Real acceptance is still pending: incoming and outgoing SMS via
+an Android SIM, Safepay Sandbox payment/refund/failure through verified webhooks, and a
+real Telegram escalation alert. Keep credentials out of commits and logs.
 
-Telegram: implement Bot sendMessage with safe content/URL handling, token URL redaction,
-429 retry_after, permanent forbidden/chat errors and unknown network outcomes. Return
-normalized result, never retry or alter lead ownership inside the adapter.
-
-Use synthetic SDK/request fixtures for unit/contract tests; show genuine valid/invalid/
-missing signature and unknown-outcome cases. No real integration completeness claim from
-fixtures. Real sandbox phone/Checkout/refund/chat acceptance is coordinated with D1 and
-requires credentials/public HTTPS; never commit or print those credentials.
-
-## Handoff
-
-One scoped branch/PR per independent deliverable. Report task/issue ref, functions/files,
-requirements, contract changes (or none), exact commands/results, limitations/unknowns,
-commit/PR and next action. Developer 1 wires HTTP, secrets, persistence, idempotency,
-retries and domain effects. Required human review precedes merge. Preserve independently
-reviewable adapter boundaries and avoid backend duplication merely to show a demo.
+Handoff each correction with the issue/PR, commit SHA, changed files, contract mapping,
+tests/results, remaining limitations, and next owner. Human review is required before merge.

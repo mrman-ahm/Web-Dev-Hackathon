@@ -29,7 +29,7 @@ is cleared while retrying. Only actual ownership transitions increment assignmen
 
 ## Intake, eligibility and round robin
 
-- Public web form, verified Twilio inbound and authorized manual entry call one
+- Public web form, verified Textbee inbound and authorized manual entry call one
   `createLead` application service. Each has source plus a durable workspace/intake key.
   A duplicate key with different normalized content returns conflict; same content replays.
 - A default disabled pool rule exists after signup; no-rule intake therefore has a durable

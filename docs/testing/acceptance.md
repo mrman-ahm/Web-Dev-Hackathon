@@ -1,7 +1,10 @@
 # Acceptance and verification strategy
 
 This is planned evidence, not passing test results. [Traceability](../requirements/traceability.md)
-contains all 81 exact acceptance criteria. Tag tests/evidence by those IDs. A product
+contains all 81 exact problem-statement acceptance criteria. The official
+[Participant Rubric](../requirements/rubric-traceability.md) and its
+[judge-facing live checklist](judge-demo-checklist.md) define the score-level evidence
+for each rubric criterion. Tag tests/evidence by source and rubric IDs. A product
 requirement is Verified only when its whole acceptance criterion has observed evidence;
 a single passing unit test, scaffold or green build cannot establish full F1 or I1.
 
