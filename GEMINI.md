@@ -19,7 +19,7 @@ Credentials arrive as explicit server-only inputs; never log them or return them
 Provider SDK types stay inside adapters. Mocks test logic; real-provider completeness needs
 separate actual evidence. Preserve failed/unknown outcomes rather than false success.
 
-Owned paths and task numbers are in `docs/agent-handoffs/developer-2-start.md`
+Owned paths and task numbers are in [Developer 2 handoff](docs/agent-handoffs/developer-2-start.md)
 when Foundation C/D publishes it. Until that document exists, use the assigned GitHub task
 and approved API/provider contracts; do not assume a missing handoff authorizes new scope.
 Root dependencies, shared contracts, schemas, routing, CI and environment changes require
