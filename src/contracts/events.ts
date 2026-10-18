@@ -43,10 +43,38 @@ const ActorSchema=z.discriminatedUnion('kind',[
  z.strictObject({kind:z.literal('provider'),membershipId:z.null()}),
 ]);
 const envelope={id,name:z.string(),schemaVersion:z.literal(1),workspaceId:id,aggregate:z.strictObject({type:z.string().min(1),id,version}),occurredAt:instant,actor:ActorSchema,correlationId:id,causationId:id.nullable()};
-export type DomainEvent<N extends EventName=EventName>=N extends EventName?z.infer<z.ZodObject<typeof envelope>>&{name:N;payload:EventPayload<N>}:never;
-const variants=Object.entries(eventPayloadSchemas).map(([name,payload])=>z.strictObject({...envelope,name:z.literal(name),payload}));
-export const DomainEventSchema=z.union(variants).superRefine((event,context)=>{
+export const DomainEventSchema=z.discriminatedUnion('name',[
+ z.strictObject({...envelope,name:z.literal('identity.user_registered'),payload:eventPayloadSchemas['identity.user_registered']}),
+ z.strictObject({...envelope,name:z.literal('workspace.created'),payload:eventPayloadSchemas['workspace.created']}),
+ z.strictObject({...envelope,name:z.literal('membership.changed'),payload:eventPayloadSchemas['membership.changed']}),
+ z.strictObject({...envelope,name:z.literal('permissions.changed'),payload:eventPayloadSchemas['permissions.changed']}),
+ z.strictObject({...envelope,name:z.literal('contact.created'),payload:eventPayloadSchemas['contact.created']}),
+ z.strictObject({...envelope,name:z.literal('contact.updated'),payload:eventPayloadSchemas['contact.updated']}),
+ z.strictObject({...envelope,name:z.literal('contact.deleted'),payload:eventPayloadSchemas['contact.deleted']}),
+ z.strictObject({...envelope,name:z.literal('crm.configuration_changed'),payload:eventPayloadSchemas['crm.configuration_changed']}),
+ z.strictObject({...envelope,name:z.literal('opportunity.stage_changed'),payload:eventPayloadSchemas['opportunity.stage_changed']}),
+ z.strictObject({...envelope,name:z.literal('lead.created'),payload:eventPayloadSchemas['lead.created']}),
+ z.strictObject({...envelope,name:z.literal('lead.assigned'),payload:eventPayloadSchemas['lead.assigned']}),
+ z.strictObject({...envelope,name:z.literal('lead.acknowledged'),payload:eventPayloadSchemas['lead.acknowledged']}),
+ z.strictObject({...envelope,name:z.literal('lead.escalated'),payload:eventPayloadSchemas['lead.escalated']}),
+ z.strictObject({...envelope,name:z.literal('lead.reassigned'),payload:eventPayloadSchemas['lead.reassigned']}),
+ z.strictObject({...envelope,name:z.literal('lead.recovered'),payload:eventPayloadSchemas['lead.recovered']}),
+ z.strictObject({...envelope,name:z.literal('lead.closed'),payload:eventPayloadSchemas['lead.closed']}),
+ z.strictObject({...envelope,name:z.literal('employee.availability_changed'),payload:eventPayloadSchemas['employee.availability_changed']}),
+ z.strictObject({...envelope,name:z.literal('message.received'),payload:eventPayloadSchemas['message.received']}),
+ z.strictObject({...envelope,name:z.literal('message.sent'),payload:eventPayloadSchemas['message.sent']}),
+ z.strictObject({...envelope,name:z.literal('message.failed'),payload:eventPayloadSchemas['message.failed']}),
+ z.strictObject({...envelope,name:z.literal('payment.confirmed'),payload:eventPayloadSchemas['payment.confirmed']}),
+ z.strictObject({...envelope,name:z.literal('payment.refunded'),payload:eventPayloadSchemas['payment.refunded']}),
+ z.strictObject({...envelope,name:z.literal('appointment.created'),payload:eventPayloadSchemas['appointment.created']}),
+ z.strictObject({...envelope,name:z.literal('appointment.rescheduled'),payload:eventPayloadSchemas['appointment.rescheduled']}),
+ z.strictObject({...envelope,name:z.literal('appointment.cancelled'),payload:eventPayloadSchemas['appointment.cancelled']}),
+ z.strictObject({...envelope,name:z.literal('integration.connection_changed'),payload:eventPayloadSchemas['integration.connection_changed']}),
+ z.strictObject({...envelope,name:z.literal('integration.event_failed'),payload:eventPayloadSchemas['integration.event_failed']}),
+ z.strictObject({...envelope,name:z.literal('notification.delivery_changed'),payload:eventPayloadSchemas['notification.delivery_changed']})
+]).superRefine((event,context)=>{
  if ('workspaceId' in event.payload && event.payload.workspaceId!==event.workspaceId) context.addIssue({code:'custom',path:['payload','workspaceId'],message:'Workspace identity mismatch'});
 });
+export type DomainEvent<N extends EventName=EventName>=Extract<z.infer<typeof DomainEventSchema>,{name:N}>;
 export const RealtimeSignalSchema=z.strictObject({kind:z.literal('invalidate'),domain:z.string().min(1),revision:z.string().min(1)});
 export type RealtimeSignal=z.infer<typeof RealtimeSignalSchema>;

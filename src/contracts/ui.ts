@@ -30,7 +30,7 @@ export const PipelineTotalsSchema=z.discriminatedUnion('visibility',[
  z.strictObject({visibility:z.literal('visible'),stages:z.array(PipelineStageValueSchema)}),
  z.strictObject({visibility:z.literal('restricted')}),
 ]);
-export const AppointmentSummarySchema=z.strictObject({id:IdSchema,contactName:z.string().min(1),employeeName:z.string().min(1),startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,status:z.string().min(1)}).refine(v=>v.endsAt>v.startsAt,'Appointment end must follow start');
+export const AppointmentSummarySchema=z.strictObject({id:IdSchema,contactName:z.string().min(1),employeeName:z.string().min(1),startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,status:z.string().min(1)}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt),'Appointment end must follow start');
 export const DashboardSnapshotSchema=z.strictObject({scope:z.enum(['personal','company']),workspaceId:IdSchema,asOf:InstantSchema,timezone:TimezoneSchema,metrics:z.array(DashboardMetricSchema),openPipelineByStage:PipelineTotalsSchema,upcomingAppointments:z.array(AppointmentSummarySchema),collections:z.discriminatedUnion('visibility',[z.strictObject({visibility:z.literal('visible'),grossPayments:z.array(MoneySchema),confirmedRefunds:z.array(MoneySchema),netCollected:TotalsSchema}),z.strictObject({visibility:z.literal('restricted')})])});
 export const ContactSummarySchema=z.strictObject({id:IdSchema,name:z.string().min(1),companyName:z.string().nullable(),ownerName:z.string().nullable()});
 export const LeadSummarySchema=z.strictObject({id:IdSchema,contact:ContactSummarySchema,source:LeadSourceSchema,ownerName:z.string().min(1),ownershipMode:OwnershipModeSchema,ackDeadlineAt:InstantSchema.nullable(),recoveryReasons:z.array(RecoveryReasonSchema)});
@@ -39,7 +39,7 @@ export type WorkspaceSummary=z.infer<typeof WorkspaceSummarySchema>;
 export type NavigationItem=z.infer<typeof NavigationItemSchema>;
 export type SessionView=z.infer<typeof SessionViewSchema>;
 export type UiError=z.infer<typeof UiErrorSchema>;
-export type RemoteData<T>={status:'loading'}|{status:'error';error:UiError}|{status:'empty'}|{status:'ready';data:T};
+export type RemoteData<T>=z.infer<ReturnType<typeof RemoteDataSchema<z.ZodType<T>>>>;
 export type MetricValue=z.infer<typeof MetricValueSchema>;
 export type DashboardMetricId=z.infer<typeof DashboardMetricIdSchema>;
 export type DashboardMetric=z.infer<typeof DashboardMetricSchema>;

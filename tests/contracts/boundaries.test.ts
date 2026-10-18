@@ -69,3 +69,10 @@ it('requires explicit restriction instead of leaked collection arrays',()=>{
  expect(DashboardSnapshotSchema.safeParse({...syntheticDashboard,collections:{visibility:'restricted',netCollected:[{amountMinor:'100',currency:'USD'}]}}).success).toBe(false);
  expect(DashboardSnapshotSchema.parse({...syntheticDashboard,collections:{visibility:'restricted'}}).collections).toEqual({visibility:'restricted'});
 });
+it('rejects currency-shaped strings that are not ISO currencies',()=>{
+ expect(MoneySchema.safeParse({amountMinor:'100',currency:'ZZZ'}).success).toBe(false);
+});
+it('compares appointment instants by time rather than lexical fractional spelling',async()=>{
+ const { AppointmentSummarySchema }=await import('../../src/contracts/ui');
+ expect(AppointmentSummarySchema.safeParse({id:'11111111-1111-4111-8111-111111111111',contactName:'Customer',employeeName:'Owner',startsAt:'2026-10-18T08:00:00Z',endsAt:'2026-10-18T08:00:00.100Z',timezone:'UTC',status:'confirmed'}).success).toBe(true);
+});

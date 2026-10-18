@@ -21,7 +21,7 @@ export const OpportunityDtoSchema=VersionedSchema.extend({title:NonemptySchema,c
 export const LeadDtoSchema=VersionedSchema.extend({contactId:IdSchema,opportunityId:IdSchema.nullable(),source:LeadSourceSchema,state:z.enum(['open','closed']),accountableMembershipId:IdSchema,ownershipMode:OwnershipModeSchema,assignmentVersion:VersionSchema,assignedAt:InstantSchema.nullable(),ackDeadlineAt:InstantSchema.nullable(),acknowledgedAt:InstantSchema.nullable(),recoveryReasons:z.array(RecoveryReasonSchema)});
 export const MessageDtoSchema=VersionedSchema.extend({conversationId:IdSchema,direction:z.enum(['inbound','outbound']),body:z.string().max(10000),state:z.enum(['received','pending','sent','delivered','failed','unknown']),failureCode:z.string().nullable()});
 export const PaymentDtoSchema=VersionedSchema.extend({opportunityId:IdSchema,contactId:IdSchema,requestedBy:IdSchema,money:MoneySchema,state:z.enum(['pending','open','abandoned','expired','failed','paid','partially_refunded','refunded']),checkoutUrl:z.url({protocol:/^https$/}).nullable(),providerReference:z.string().nullable()});
-export const AppointmentDtoSchema=VersionedSchema.extend({contactId:IdSchema,opportunityId:IdSchema.nullable(),employeeMembershipId:IdSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,state:z.enum(['pending','confirmed','rescheduling','cancelling','cancelled','failed','conflict']),providerReference:z.string().nullable()}).refine(v=>v.endsAt>v.startsAt,'Appointment end must follow start');
+export const AppointmentDtoSchema=VersionedSchema.extend({contactId:IdSchema,opportunityId:IdSchema.nullable(),employeeMembershipId:IdSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,state:z.enum(['pending','confirmed','rescheduling','cancelling','cancelled','failed','conflict']),providerReference:z.string().nullable()}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt),'Appointment end must follow start');
 export const IntegrationDtoSchema=VersionedSchema.extend({provider:ProviderSchema,membershipId:IdSchema.nullable(),status:z.enum(['disconnected','connected','error','reconnect_required']),lastSuccessAt:InstantSchema.nullable(),lastError:z.strictObject({code:z.string(),message:z.string()}).nullable(),limits:z.array(z.string())});
 export const AuditDtoSchema=z.strictObject({id:IdSchema,eventType:NonemptySchema,actor:z.strictObject({kind:z.enum(['user','system','provider']),displayName:z.string().nullable()}),target:z.strictObject({type:NonemptySchema,id:IdSchema}),occurredAt:InstantSchema,before:z.record(z.string(),z.unknown()).nullable(),after:z.record(z.string(),z.unknown()).nullable()});
 export const SignupInputSchema=z.strictObject({email:z.email().max(254),password:z.string().min(12).max(128),displayName:NonemptySchema,workspaceName:NonemptySchema,timezone:TimezoneSchema,defaultCurrency:CurrencySchema});
@@ -36,7 +36,7 @@ export const RecoverLeadInputSchema=z.strictObject({assignmentVersion:VersionSch
 export const CreateLeadInputSchema=z.strictObject({contactId:IdSchema,opportunityId:IdSchema.optional(),source:z.literal('manual'),sourceReference:z.string().max(500).optional()});
 export const SendConversationMessageInputSchema=z.strictObject({body:z.string().min(1).max(10000),ackContext:AckContextSchema.optional()});
 export const CreatePaymentRequestInputSchema=z.strictObject({money:MoneySchema});
-export const CreateAppointmentInputSchema=z.strictObject({contactId:IdSchema,opportunityId:IdSchema.nullable(),employeeMembershipId:IdSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,ackContext:AckContextSchema.optional()}).refine(v=>v.endsAt>v.startsAt,'Appointment end must follow start');
+export const CreateAppointmentInputSchema=z.strictObject({contactId:IdSchema,opportunityId:IdSchema.nullable(),employeeMembershipId:IdSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,ackContext:AckContextSchema.optional()}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt),'Appointment end must follow start');
 export type ErrorCode=z.infer<typeof ErrorCodeSchema>;
 export type ApiError=z.infer<typeof ApiErrorSchema>;
 export type ActorContext=z.infer<typeof ActorContextSchema>;
@@ -59,3 +59,6 @@ export type AuditDto=z.infer<typeof AuditDtoSchema>;
 export type SignupInput=z.infer<typeof SignupInputSchema>;
 export type LoginInput=z.infer<typeof LoginInputSchema>;
 export type UpdateWorkspaceInput=z.infer<typeof UpdateWorkspaceInputSchema>;
+
+export type ApiSuccess<T>=z.infer<ReturnType<typeof ApiSuccessSchema<z.ZodType<T>>>>;
+export type ApiList<T>=z.infer<ReturnType<typeof ApiListSchema<z.ZodType<T>>>>;

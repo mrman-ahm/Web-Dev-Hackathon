@@ -11,10 +11,7 @@ export const ProviderOutcomeSchema=<T extends z.ZodType>(value:T)=>z.discriminat
  z.strictObject({status:z.literal('permanent_failure'),code:CodeSchema}),
  z.strictObject({status:z.literal('unknown'),code:CodeSchema,reconciliationReference:ReferenceSchema.optional()}),
 ]);
-export type ProviderOutcome<T>={status:'confirmed';value:T;reference:string}
- |{status:'temporary_failure';code:string;retryAfterSeconds?:number}
- |{status:'permanent_failure';code:string}
- |{status:'unknown';code:string;reconciliationReference?:string};
+export type ProviderOutcome<T>=z.infer<ReturnType<typeof ProviderOutcomeSchema<z.ZodType<T>>>>;
 export const VerificationErrorCodeSchema=z.enum(['INVALID_SIGNATURE','INVALID_PAYLOAD','CONNECTION_MISMATCH','UNSUPPORTED_CONTENT_TYPE','STALE_SIGNATURE']);
 export type VerificationErrorCode=z.infer<typeof VerificationErrorCodeSchema>;
 /** Verification methods throw only this safe error for untrusted requests. Never
@@ -26,7 +23,7 @@ export class AdapterVerificationError extends Error {
 export const RawWebhookSchema=z.strictObject({rawBody:z.instanceof(Uint8Array),headers:z.instanceof(Headers),canonicalUrl:HttpsUrlSchema});
 export type RawWebhook=z.infer<typeof RawWebhookSchema>;
 export const TwilioCredentialsSchema=z.strictObject({accountSid:z.string().regex(/^AC[0-9a-fA-F]{32}$/),authToken:z.string().min(1),channel:z.enum(['sms','whatsapp']),from:PhoneE164Schema});
-export const StripeCredentialsSchema=z.strictObject({secretKey:z.string().min(1),webhookSigningSecret:z.string().min(1),mode:z.literal('test')});
+export const StripeCredentialsSchema=z.strictObject({secretKey:z.string().regex(/^(sk|rk)_test_[A-Za-z0-9_]+$/),webhookSigningSecret:z.string().min(1),mode:z.literal('test')});
 export const TelegramCredentialsSchema=z.strictObject({botToken:z.string().min(1)});
 export type TwilioCredentials=z.infer<typeof TwilioCredentialsSchema>;
 export type StripeCredentials=z.infer<typeof StripeCredentialsSchema>;
@@ -79,9 +76,9 @@ export interface NotificationAdapter {
 /** Google belongs to Developer 1. Access tokens are injected by core; refreshing,
  * encrypted persistence, OAuth state and job retries are orchestration concerns. */
 export const GoogleCredentialsSchema=z.strictObject({accessToken:z.string().min(1),calendarId:z.string().min(1)});
-export const BusyQuerySchema=z.strictObject({startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema}).refine(v=>v.endsAt>v.startsAt,'End must follow start');
-export const BusyIntervalsSchema=z.strictObject({intervals:z.array(z.strictObject({startsAt:InstantSchema,endsAt:InstantSchema}).refine(v=>v.endsAt>v.startsAt)),checkedAt:InstantSchema});
-export const CalendarEventCommandSchema=z.strictObject({appointmentId:IdSchema,providerEventId:z.string().regex(/^[0-9a-v]{5,1024}$/),summary:NonemptySchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,expectedEtag:z.string().nullable()}).refine(v=>v.endsAt>v.startsAt,'End must follow start');
+export const BusyQuerySchema=z.strictObject({startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt),'End must follow start');
+export const BusyIntervalsSchema=z.strictObject({intervals:z.array(z.strictObject({startsAt:InstantSchema,endsAt:InstantSchema}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt))),checkedAt:InstantSchema});
+export const CalendarEventCommandSchema=z.strictObject({appointmentId:IdSchema,providerEventId:z.string().regex(/^[0-9a-v]{5,1024}$/),summary:NonemptySchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema,expectedEtag:z.string().nullable()}).refine(v=>Date.parse(v.endsAt)>Date.parse(v.startsAt),'End must follow start');
 export const CalendarEventSchema=z.strictObject({providerEventId:ReferenceSchema,etag:ReferenceSchema,startsAt:InstantSchema,endsAt:InstantSchema,timezone:TimezoneSchema});
 export const CancelEventCommandSchema=z.strictObject({providerEventId:ReferenceSchema,expectedEtag:z.string().nullable()});
 export const CancelledEventSchema=z.strictObject({providerEventId:ReferenceSchema,cancelledAt:InstantSchema});
