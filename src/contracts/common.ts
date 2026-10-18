@@ -12,7 +12,9 @@ export const HttpsUrlSchema = z.url({protocol:/^https$/});
 export const PhoneE164Schema = z.string().regex(/^\+[1-9]\d{1,14}$/);
 export const BaseLevelSchema = z.enum(['owner','admin','user']);
 export const AvailabilitySchema = z.enum(['available','busy','on_leave','offline']);
-export const ProviderSchema = z.enum(['twilio','stripe','google','telegram']);
+/** Active provider choices surfaced by current connection DTOs and events.
+ * Legacy Twilio/Stripe V0 webhook contracts remain isolated in integrations.ts. */
+export const ProviderSchema = z.enum(['textbee','safepay','telegram','google']);
 export const OwnershipModeSchema = z.enum(['operational','custody']);
 export const LeadSourceSchema = z.enum(['form','message','manual']);
 export const RecoveryReasonSchema = z.enum(['overdue_acknowledgement','repeated_escalation','idle','awaiting_eligible_employee','escalation_chain_exhausted']);
