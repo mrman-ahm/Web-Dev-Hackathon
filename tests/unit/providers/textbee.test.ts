@@ -294,20 +294,23 @@ describe('TextbeeAdapter', () => {
       }
     });
 
-    it('normalizes UNKNOWN_STATE status event explicitly with safe error code', () => {
+    it('normalizes UNKNOWN_STATE status event explicitly as non-terminal unknown state and preserves timestamps', () => {
       const payload = {
         smsId: 'sms-out-205',
         recipient: '+923331112233',
         deviceId: 'device-android-sim-1',
         webhookEvent: 'UNKNOWN_STATE',
+        updatedAt: '2026-10-18T12:00:00.000Z',
       };
 
       const result = adapter.verifyInbound(createWebhook(payload), credentials);
       expect(result.kind).toBe('message.status');
       if (result.kind === 'message.status') {
-        expect(result.state).toBe('failed');
-        expect(result.errorCode).toBe('UNKNOWN_STATE');
+        // Non-terminal: SMS may still have been delivered per textbee documentation
+        expect(result.state).toBe('unknown');
+        expect(result.errorCode).toBeNull();
         expect(result.providerEventId).toBe('textbee-unknown-sms-out-205');
+        expect(result.occurredAt).toBe('2026-10-18T12:00:00.000Z');
       }
     });
 
