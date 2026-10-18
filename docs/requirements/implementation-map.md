@@ -3,9 +3,10 @@
 Derived from the approved architecture and [task catalog](../coordination/backlog.json).
 This maps scope, not live progress; GitHub issues/PRs and evidence determine completion.
 The primary human requested local implementation and batched GitHub updates, so bulk
-publication is deferred while the first development wave proceeds. No issue numbers
-are invented. [Coordination issue #4](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/4)
-is the current aggregate tracker; per-task refs will be added on publication.
+publication is deferred while the first development wave proceeds. Published provider
+references are linked in the task catalog; no other issue numbers are inferred.
+[Coordination issue #4](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/4)
+is the aggregate tracker.
 
 | Requirement | Implementation task codes | Human responsibility |
 | --- | --- | --- |
@@ -40,23 +41,23 @@ is the current aggregate tracker; per-task refs will be added on publication.
 | F5.3 | `dashboard-core`, `dashboard-view` | D1/GPT |
 | F5.4 | `dashboard-core` | D1/GPT |
 | F5.5 | `dashboard-core`, `dashboard-view` | D1/GPT |
-| I1.1 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.2 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.3 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.4 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.5 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.6 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.7 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.8 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I1.9 | `messaging-core`, `twilio-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.1 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.2 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.3 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.4 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.5 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.6 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.7 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
-| I2.8 | `payments-core`, `stripe-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.1 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.2 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.3 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.4 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.5 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.6 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.7 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.8 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I1.9 | `messaging-core`, `textbee-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.1 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.2 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.3 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.4 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.5 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.6 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.7 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
+| I2.8 | `payments-core`, `safepay-adapter` | D1/GPT; D2/Gemini provider adapter |
 | I3.1 | `calendar-core` | D1/GPT |
 | I3.2 | `calendar-core` | D1/GPT |
 | I3.3 | `calendar-core` | D1/GPT |

@@ -46,20 +46,22 @@ the R10 score.
 
 ## R05 — Messaging integration (12 points)
 
-- [ ] Connect the actual Twilio sandbox/test account and send a real incoming phone message to the configured number.
-- [ ] Show the message creates or matches the correct contact/conversation/lead and that the inbound event is stored once.
-- [ ] Send a real reply from the application and show it is delivered to the phone.
+- [ ] Connect the actual Textbee sandbox/test account and send a real incoming phone message to the configured number.
+- [ ] Show the message creates or matches the correct CRM contact/conversation/lead, keeps Textbee's `receivedAt`, and stores the inbound event once.
+- [ ] Send a real reply from the application and show it is delivered to the phone; show `smsBatchId` and per-recipient `smsId` status callbacks reconcile to that message.
+- [ ] Show an `UNKNOWN_STATE` callback keeps the original provider state visible for diagnosis and does not mark the message failed; show out-of-order callbacks do not regress a final state.
 - [ ] Submit a forged/invalid-signature webhook and show rejection without creating or changing a message/lead.
 - [ ] Replay the same valid provider event and show deduplication leaves one business event.
 - [ ] Cause or select a real provider failure, show its safe reason/state in the app, retry it, and show the final provider outcome.
 
 ## R06 — Payments integration (12 points)
 
-- [ ] Create a hosted Stripe test checkout for a real opportunity and complete it with a provider test payment method.
+- [ ] Create a hosted Safepay test checkout for a real opportunity and complete it with a provider test payment method.
 - [ ] Show the verified provider webhook updates the persisted payment record automatically, without trusting the browser redirect.
-- [ ] Replay the webhook and show the payment is not double-counted; show a distinct later event is reconciled correctly.
-- [ ] Refund the test payment and show the provider-confirmed refund and gross/refund/net totals separately.
-- [ ] Run a declined/failed and an expired/abandoned checkout; show both outcomes clearly without marking them collected.
+- [ ] Reject an invalid Safepay signature without creating a financial fact; replay a valid webhook and show it is not double-counted.
+- [ ] Show event-token deduplication and tracker correlation remain distinct, including an out-of-order payment/refund event sequence.
+- [ ] Refund the test payment and show only provider-confirmed `payment.refunded` plus `refund_amount` updates the collection ledger and gross/refund/net totals.
+- [ ] Run a declined/failed checkout and show application-policy expiry separately from provider-confirmed expiry; neither is marked collected.
 
 ## R07 — Calendar integration (10 points)
 

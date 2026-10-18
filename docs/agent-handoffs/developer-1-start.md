@@ -9,8 +9,9 @@ repeated design approval. New major deviations still need the primary decision.
 ## Initial work packages
 
 Coordination issue #4 tracks this local-first wave; architecture issue #2 / PR #3 is the
-approved contract dependency. Per-task issue numbers are not yet published. Use task
-codes from [catalog](../coordination/backlog.json), not invented GitHub IDs:
+approved architecture dependency. Use task codes from [catalog](../coordination/backlog.json),
+not invented GitHub IDs. Provider issues #5, #6 and #7 and contract PR #9 are published;
+other task issue references are recorded only when they actually exist:
 
 1. `scaffold`: Next.js/dependencies/strict configs, executable shared schemas, fixtures and CI.
 2. `auth-workspaces`: Supabase schema/RLS/bootstrap and actual Auth/session/workspace vertical slice.
@@ -41,7 +42,7 @@ Current user instruction is local work with consolidated remote updates, not rep
 
 D1 owns all UI, architecture, database/Auth/permissions, CRM/leads/jobs, Google Calendar,
 provider-independent orchestration, tests/security and deployment. D2 owns independent
-Twilio/Stripe/Telegram adapters only; do not duplicate their SDK code without coordination.
+Textbee/Safepay/Telegram adapters only; do not duplicate their SDK code without coordination.
 Use stable public module/contracts; no service-role ordinary CRUD, fake success or live
 metrics, raw secret publication, bypassed RLS or browser-owned deadlines.
 

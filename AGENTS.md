@@ -78,7 +78,7 @@ Each completion report/PR states summary, files/modules changed, contract/migrat
 changes (or none), tests and outcomes, requirement IDs, rubric criteria and evidence,
 limitations, open blockers,
 and the next owner/action. Developer 1 uses GPT and owns all UI plus core systems; Developer 2 uses Gemini on
-another machine for Twilio/Stripe/Telegram adapters only. Follow
+another machine for Textbee/Safepay/Telegram adapters only. Follow
 [ownership](docs/ownership.md); do not infer human identities from GitHub accounts.
 Dispatch suitable independent GPT tasks with explicit ownership and isolated worktrees.
 Never claim a remote Gemini agent has started without evidence. Never self-approve or merge without authorized human approval and green checks.

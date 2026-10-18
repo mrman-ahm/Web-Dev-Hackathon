@@ -7,8 +7,8 @@ Gemini runs on Developer 2's separate machine when that human starts it. No remo
 activity or continuous monitoring is claimed.
 
 The primary human requested fewer GitHub calls/pushes and a focus on local code. The current
-directive authorized a targeted provider issue batch, now published: [Twilio #7](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7),
-[Stripe #5](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5) and [Telegram #6](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6).
+directive authorized a targeted provider issue batch, now published: [Textbee #7](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7),
+[Safepay #5](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5) and [Telegram #6](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6).
 Each issue carries rubric IDs/weights and links to the verified shared
 `feat/core-foundation@7ad387f` scaffold; URLs are recorded in the task catalog. Other bulk
 task/label/Project publication remains deferred. The catalog remains task definitions, not
@@ -17,7 +17,7 @@ a second progress board.
 ## Owner and dependency rules
 
 D1/GPT owns all UI/core/domain/database/security/Google Calendar and integration orchestration.
-D2/Gemini owns only Twilio/Stripe/Telegram provider adapters and provider tests. Root config,
+D2/Gemini owns only Textbee/Safepay/Telegram provider adapters and provider tests. Root config,
 credentials persistence, shared contracts and migrations are D1-stewarded. Human GitHub
 mappings are unconfirmed; use lane in task body, no inferred assignees/CODEOWNERS.
 

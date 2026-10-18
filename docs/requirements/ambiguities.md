@@ -18,7 +18,7 @@
 
 The primary human's architecture approval on 2026-10-18 confirms two developers on
 separate machines. Developer 1/GPT owns all frontend/UI and core systems (75–80%), including
-Google Calendar. Developer 2/Gemini owns Twilio, Stripe and Telegram adapters, validation,
+Google Calendar. Developer 2/Gemini owns Textbee, Safepay and Telegram adapters, validation,
 normalization, provider errors and tests. Developer 1 retains domain/persistence/credentials/
 shared-contract orchestration. GitHub-to-human mappings remain unconfirmed. This explicitly
 supersedes the earlier single-human statement; see [ownership](../ownership.md).
