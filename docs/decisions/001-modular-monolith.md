@@ -1,6 +1,6 @@
 # ADR 001: Modular monolith
 
-Status: **Agreed architectural direction; detailed implementation proposed**. Date: 2026-10-18.
+Status: **Accepted by primary human on 2026-10-18**. Date: 2026-10-18.
 
 ## Context
 

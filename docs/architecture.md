@@ -1,8 +1,8 @@
 # System architecture
 
-Status: **proposed for primary human review** under [issue #2](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/2).
+Status: **approved in principle by the primary human on 2026-10-18, with targeted ownership/reporting corrections applied** under [issue #2](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/2).
 The modular-monolith/Supabase direction and Owner-custody fallback are already human
-instructions. Detailed contracts below become stable after review; no deployed system
+instructions. Detailed contracts below are the approved implementation baseline; no deployed system
 or product requirement is claimed complete. See [ADRs](decisions/README.md).
 
 ## Execution and trust boundaries
@@ -155,6 +155,17 @@ flowchart LR
   [security](security.md), [acceptance](testing/acceptance.md).
 - [Requirements](requirements/traceability.md) and [ambiguities](requirements/ambiguities.md).
 
-Do not classify proposal review as implementation or provider acceptance. Foundation C
+Do not classify architecture review as implementation or provider acceptance. Foundation C
 links accepted contracts to issues; Foundation D begins independently reviewable core/UI
-work. Current staffing is one human across both lanes; no second laptop/agent is claimed active.
+work. Two human developers use separate machines: Developer 1/GPT owns all UI and core;
+Developer 2/Gemini owns Twilio/Stripe/Telegram adapters only. Remote Gemini execution
+is not claimed; handoffs and PRs coordinate it.
+
+## Corrected developer execution lanes
+
+Developer 1/GPT owns every frontend/design-system/shell/presentation task and all
+provider-independent application/domain/database/credential/job logic, plus Google Calendar.
+Developer 2/Gemini owns only the Twilio, Stripe and Telegram server adapters, provider
+signature validation/normalization/error classification and provider unit/contract tests.
+Adapter paths and forbidden changes are in ownership.md; no direct Gemini process is
+assumed accessible on the other machine. Shared contracts remain Developer 1's authority.

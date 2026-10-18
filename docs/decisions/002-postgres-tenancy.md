@@ -1,6 +1,6 @@
 # ADR 002: PostgreSQL/Supabase tenant data
 
-Status: **Proposed**. Date: 2026-10-18.
+Status: **Accepted by primary human on 2026-10-18**. Date: 2026-10-18.
 
 ## Context
 

@@ -1,6 +1,6 @@
 # PostgreSQL database contract
 
-Status: proposed schema, not an applied migration. Developer 1 is schema steward.
+Status: approved schema design (2026-10-18); not an applied migration. Developer 1 is schema steward.
 Names and invariants below are the migration specification. Runtime generated database
 TS types must come from applied migrations; do not hand-maintain a competing DB model.
 
@@ -122,8 +122,8 @@ remain stable unless an explicit audited migration reconfigures active assignmen
 | `audit_entries` / audit | `actor_kind`, `actor_membership_id nullable`, `event_type`, `target_type`, `target_id uuid`, `before_json`, `after_json`, `occurred_at`, `correlation_id`, `source_event_id nullable` | Append-only; index workspace/occurred_at/id, event_type, actor; sensitive values redacted or in separately protected payload; deletion targets are immutable identity references, not cascading FKs |
 | `dashboard_preferences` / dashboard | `membership_id`, `visible_widget_ids text[]` | PK workspace/membership; allowlisted widget identifiers; only own preferences writable |
 
-Payment/refund facts store positive amounts; accounting totals are signed. A dashboard
-month sums captures confirmed in that workspace-local month minus refunds confirmed in
+Payment/refund facts store positive amounts; accounting totals are signed. Dashboard separately reports gross payments received, confirmed refunds and signed net
+collected revenue by currency. A dashboard month sums captures confirmed in that workspace-local month minus refunds confirmed in
 that month, even when the capture was earlier; net monthly totals may be negative. Lifetime
 collected revenue is all confirmed captures minus all confirmed refunds.
 

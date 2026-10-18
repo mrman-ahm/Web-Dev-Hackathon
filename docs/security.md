@@ -1,6 +1,6 @@
 # Security architecture
 
-Status: proposed implementation contract; no security control is claimed deployed.
+Status: approved implementation contract (2026-10-18); no security control is claimed deployed.
 Cross-cutting requirements: F1.3–F1.6, F4, I1.2/I2.3/I3.2/I5 and Q1–Q5/Q13.
 
 ## Identity, session and request boundary

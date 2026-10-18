@@ -1,6 +1,6 @@
 # ADR 003: Identity, sessions and configurable permissions
 
-Status: **Proposed**. Date: 2026-10-18.
+Status: **Accepted by primary human on 2026-10-18**. Date: 2026-10-18.
 
 ## Context
 

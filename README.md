@@ -41,11 +41,12 @@ to Foundation B and scaffolding review. No product dependencies are selected her
 
 ## People and navigation
 
-Developer 1 is the primary technical lead (approximately 75–80% responsibility),
-owning core domains, security, database, automation, integrations, and final integration.
-Developer 2 owns independent UI foundations and explicitly assigned peripheral work
-(approximately 20–25%). Human decisions govern; the supervisor coordinates and reviews.
-The primary human confirmed `mrman-ahm` currently handles both lanes; see [ownership](docs/ownership.md).
+Developer 1 uses GPT and owns 75–80% of implementation, including all frontend/UI,
+architecture, database, Auth/permissions, CRM/leads/jobs, Google Calendar, application
+integration, security, tests and deployment. Developer 2 uses Gemini on another machine
+for independent Twilio, Stripe and Telegram provider adapters and provider-specific tests.
+Developer 1 owns provider-independent business logic, persistence, credentials orchestration
+and shared contracts. GitHub-to-human mappings remain unconfirmed. See [ownership](docs/ownership.md).
 
 - [AGENTS.md](AGENTS.md): shared coding-agent entrypoint.
 - [GEMINI.md](GEMINI.md): Developer 2 entrypoint, importing shared instructions.

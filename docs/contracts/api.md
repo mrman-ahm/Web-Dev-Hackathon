@@ -1,6 +1,6 @@
 # API contract v1
 
-Status: proposed adoption set for human architecture review. These endpoints are not
+Status: approved v1 adoption set (2026-10-18). These endpoints are not
 implemented. After approval, `src/contracts/*.ts` Zod schemas are the executable source
 of truth; types use `z.infer`, fixtures are parsed by those schemas, and docs link them.
 Do not maintain a parallel hand-written DTO tree. Route handlers and server-rendered

@@ -63,9 +63,11 @@ Use the issue for scope/dependencies, repository contracts for interfaces, PR fo
 changes/evidence, and decisions for accepted rationale. No duplicate progress ledger.
 Each completion report/PR states summary, files/modules changed, contract/migration
 changes (or none), tests and outcomes, requirement IDs, limitations, open blockers,
-and the next owner/action. Current staffing: `mrman-ahm` handles both lanes; see the current approval rules in
-[ownership](docs/ownership.md). Agent-produced PRs need primary human review; never
-claim a second developer or independent human review when none occurred. Never self-approve or merge without authorized human approval and green checks.
+and the next owner/action. Developer 1 uses GPT and owns all UI plus core systems; Developer 2 uses Gemini on
+another machine for Twilio/Stripe/Telegram adapters only. Follow
+[ownership](docs/ownership.md); do not infer human identities from GitHub accounts.
+Dispatch suitable independent GPT tasks with explicit ownership and isolated worktrees.
+Never claim a remote Gemini agent has started without evidence. Never self-approve or merge without authorized human approval and green checks.
 For resets, follow [documentation recovery](docs/documentation.md).
 
 ## Agent Efficiency & Tool-Call Discipline

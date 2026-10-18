@@ -1,6 +1,6 @@
 # Lead automation specification
 
-Status: proposed domain design; Owner-custody fallback explicitly accepted by the
+Status: approved domain design (2026-10-18); Owner-custody fallback explicitly accepted by the
 primary human on 2026-10-18. Other interpretations are listed in
 [ambiguities](../requirements/ambiguities.md). Covers F3.1–F3.9 and Q4–Q6/Q11/Q12.
 

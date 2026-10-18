@@ -1,60 +1,56 @@
 # Ownership and review
 
-Ownership routes coordination and review; an explicitly approved task may cross a boundary.
-The directory map is prospective until Foundation B/D establishes the actual structure.
+Two humans work on separate machines. Developer 1 uses GPT and owns approximately
+75–80% of implementation; Developer 2 uses Gemini and owns independent provider adapters
+(approximately 20–25%). GitHub account-to-human mappings are **unconfirmed**. Repository
+ownership, connector identity and earlier staffing assumptions do not establish them.
 
-| Area / intended path | Primary responsibility | Review / coordination |
+## Responsibility boundaries
+
+| Area / paths | Owner | Required coordination |
 | --- | --- | --- |
-| `supabase/`, database migrations and RLS | Developer 1 | Other human review; schema/data-loss approval by Developer 1 |
-| `src/modules/identity/`, `permissions/`, `crm/`, `leads/`, `audit/` domain | Developer 1 | Other human review for sensitive/cross-domain changes |
-| Jobs, core messaging/payments/calendar/integration backends | Developer 1 | Other human review plus supervisor analysis for security/concurrency |
-| `src/contracts/`, `docs/contracts/` | Developer 1 technical authority | Affected consumers acknowledge approved changes |
-| `src/components/`, design tokens, shell | Developer 2 | Developer 1 review; coordinate global routes |
-| Dashboard/audit presentation, read-only views | Developer 2 when assigned | Consume approved read models; no new metric/permission semantics |
-| Telegram adapter | Developer 2 when assigned | Agreed interface first; orchestration/secrets/jobs remain Developer 1 |
-| `src/app/`, `src/lib/`, root config, dependencies, CI, env, deployment | Shared | Explicit task scope and affected-owner coordination |
-| Tests | Implementing domain owner | Cross-cutting suites shared; do not weaken another lane's checks |
-| Governance/docs | Shared; Developer 1 arbitrates | Material policy changes require explicit human approval |
+| All frontend/UI/UX, design tokens, shell, navigation, components, dashboards/audit presentation and domain screens | Developer 1 / GPT | Shared typed interfaces; accessibility and responsive verification |
+| Architecture, contracts, database/migrations/RLS, Auth/workspaces, permissions, CRM, leads/escalation/recovery, jobs, audit, metrics/realtime | Developer 1 / GPT | Sensitive/cross-domain human review; one database steward |
+| Google OAuth/Calendar, security, application integration, testing and deployment | Developer 1 / GPT | Provider documentation and real acceptance evidence |
+| `src/modules/messaging/adapters/twilio.ts` and bounded provider helper files | Developer 2 / Gemini | Consume core-owned adapter schemas; no persistence/assignment changes |
+| `src/modules/payments/adapters/stripe.ts` and bounded provider helper files | Developer 2 / Gemini | Provider signatures, normalization and SDK calls only; no money-domain decisions |
+| `src/modules/notifications/adapters/telegram.ts` and bounded provider helper files | Developer 2 / Gemini | Provider send/error classification only; no retry/delivery orchestration |
+| Provider-specific unit/contract tests under `tests/unit/providers/` | Developer 2 / Gemini | Real external acceptance is coordinated by Developer 1 |
+| Credentials orchestration, HTTP webhook routes, inbox/outbox persistence, domain effects, retries and API/UI integration | Developer 1 / GPT | Adapters receive validated commands/credentials through explicit ports |
+| Root config, dependencies, global routing, CI/environment/deployment | Developer 1 steward; shared coordination | Developer 2 proposes required package/config changes before editing |
 
-## Current staffing and approval
+Developer 2 receives no frontend work. It may not independently modify database schemas,
+Auth/RLS/permissions, business rules, shared contracts, credentials persistence, lead
+ownership, payment accounting, job orchestration or Google Calendar. Provider-specific
+webhook validation, event normalization, provider errors and tests belong in its adapters.
+Expose a normalized confirmed/temporary/permanent/unknown result; never fake a successful
+integration. Request interface changes through a contract issue before incompatible edits.
 
-On 2026-10-18 the primary human confirmed `mrman-ahm` currently handles both lanes.
-The lane map remains useful for isolated agent tasks; it does not imply two active humans
-or an accessible second laptop. Agent-produced changes require that primary human's
-review. If a sensitive PR is authored by that human, obtain another qualified human
-reviewer before claiming independent human review; an agent cannot self-approve or
-satisfy that requirement. Current PR authoring through the connector uses `ahmad-obj`;
-that account is not evidence of a second active human developer. Route review manually
-until CODEOWNERS can be configured without creating impossible sole-author gates.
+Developer 1 dispatches dedicated GPT subagents for suitable independent tasks with explicit
+file ownership and separate worktrees. Do not edit another agent's tree. Developer 2 is
+on another machine; repository handoffs and GitHub PRs carry coordination. No remote
+Gemini process is assumed started or directly spawnable by the supervisor.
 
-Developer 1 is the primary human lead (75–80% responsibility). Developer 2 (20–25%)
-works independently on bounded peripheral tasks under that direction. This is not a
-frontend/backend split: Developer 1 may deliver central UI alongside domain services.
+## Review and exceptions
 
-Developer 2 may not independently redesign schemas, auth, permission semantics,
-shared APIs, lead rules, or core integration backends. Request a contract change or
-scope exception in an issue/PR, naming files, consumers, rationale and reviewer.
-Developer 1 approves the exception before editing; affected owners coordinate timing.
-Routine work inside approved scope needs no repeated permission request.
+One independent human approval is the target; sensitive/cross-domain changes require the
+other developer or another qualified human when the author is one of the developers.
+Supervisor/agent review supports but never replaces required human review. Primary human
+retains technical authority. Approved architecture can be implemented on explicitly
+recorded dependency branches while merge/integration waits for reviewed parent PRs.
+No agent self-approval, direct protected-branch push or automatic merge.
 
-Every PR targets independent human review. When two humans are active, sensitive and
-cross-domain work needs the other developer, including when Developer 1 is the author.
-The current single-human exception above governs agent-produced PR review. Agents cannot
-satisfy human approval. The supervisor inspects read-only by default, checks contracts,
-requirements, evidence and integration risks, and returns findings without overwriting
-assigned work. Human review must be competent for the risk; seek additional expertise
-when necessary, never self-approve to unblock a merge.
+A cross-boundary exception names files, rationale, consumers and reviewer in the task/PR;
+Developer 1 approves technical scope before editing. Ordinary approved work proceeds
+without repeated permission requests. Material policy changes require explicit human approval.
 
-## Identities and CODEOWNERS
+## CODEOWNERS and identities
 
-Inspection on 2026-10-18 confirmed repository owner `mrman-ahm` has admin permission,
-and connected account `ahmad-obj` has write permission. These observations do not enumerate all collaborators. The primary human subsequently
-confirmed `mrman-ahm` covers both responsibility lanes.
-The authenticated connector offers individual permission lookup, not collaborator listing;
-unauthenticated collaborator lookup failed. Keep manual review routing until there is a valid independent-review mapping
-that also works when the human is the PR author; do not activate impossible CODEOWNERS gates. The file is deliberately comments only.
+Confirmed repository permissions: mrman-ahm admin, connector account ahmad-obj write.
+These are account facts, not human-lane mappings. CODEOWNERS remains comments only until
+both mappings and eligible reviewers are confirmed. Sensitive/shared paths need eligible
+independent reviewers so a PR author is never its sole required approver. Use manual
+review routing meanwhile; Markdown policy is not verified GitHub protection.
 
-When configured, put both confirmed humans on sensitive/shared patterns so an author
-is never the sole eligible owner. A Developer 2-only pattern would block Developer 2's
-own PR under required owner review; use both reviewers or ordinary review routing.
-CODEOWNERS is routing, not proof that review or branch protection is enforced.
+This corrected two-human ownership policy was explicitly directed by the primary human
+in the architecture approval on 2026-10-18 and supersedes earlier single-human/UI-lane assumptions.

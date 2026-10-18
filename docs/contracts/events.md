@@ -1,6 +1,6 @@
 # Domain events and delivery contract
 
-Status: proposed v1. Immutable domain facts/outbox intent commit with the domain write.
+Status: approved v1 design (2026-10-18). Immutable domain facts/outbox intent commit with the domain write.
 No broker or event-sourced replacement for relational state is introduced.
 
 ## Envelope and delivery

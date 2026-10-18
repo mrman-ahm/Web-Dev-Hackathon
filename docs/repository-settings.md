@@ -12,9 +12,9 @@
 
 ## Administrator checklist (pending, not applied by this PR)
 
-1. Human mapping is now confirmed: `mrman-ahm` covers both lanes. Keep manual review
-   routing until independent reviewer eligibility works for human-authored PRs. Populate
-   CODEOWNERS only in a reviewed PR with a feasible mapping. Use eligible independent reviewers for sensitive/shared paths; avoid sole-author gates.
+1. Two human developers use GPT/core+all UI and Gemini/provider adapters respectively.
+   Confirm GitHub-to-human mappings and reviewer eligibility; do not infer them from
+   account permissions. Keep manual routing until CODEOWNERS has a feasible mapping. Use eligible independent reviewers for sensitive/shared paths; avoid sole-author gates.
 2. Migrate the default to `main` deliberately: preserve history, retarget open PRs and
    update local tracking/docs. Until then contribute against `master`; CI supports both.
 3. Protect the actual default branch with PRs, one independent human approval, dismissed

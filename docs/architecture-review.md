@@ -3,7 +3,8 @@
 Scope: requirements, architecture, database, API/UI/event contracts, lead automation,
 integrations and security. Independent read-only architecture agent review on 2026-10-18,
 followed by a focused review of corrections. This is not primary-human approval or proof
-of running behavior. Proposed contracts remain subject to human design review.
+of running behavior. The primary human subsequently approved the contracts/ADRs on 2026-10-18, subject to
+targeted ownership and gross/net corrections, now applied.
 
 | Finding | Correction |
 | --- | --- |
@@ -23,5 +24,9 @@ were corrected explicitly afterward. Migration DDL, RLS execution, auth/provider
 concurrency and responsive behavior remain future implementation acceptance, not reviewed
 runtime results. [Acceptance strategy](testing/acceptance.md) records each regression case.
 
-Primary human has accepted Owner custody and confirmed mrman-ahm covers both lanes.
-Other proposed ADR/domain policies require human review through the architecture PR.
+Primary human approval on 2026-10-18 accepts the technical contracts and listed ADRs,
+finite escalation/late recovery, durable five-second configuration, custody and signed
+monthly net totals. Required targeted corrections: two-human ownership (D1 all UI/core,
+D2 Twilio/Stripe/Telegram adapters), no invented account mapping, separate gross/refund/net
+currency totals. These are applied without reopening the approved architecture. Hosted
+schedule health and actual provider delivery remain implementation evidence requirements.

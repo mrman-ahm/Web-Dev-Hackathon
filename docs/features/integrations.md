@@ -1,6 +1,6 @@
 # Integration architecture
 
-Status: proposed provider boundaries; no integration is implemented or real acceptance
+Status: approved provider boundaries (2026-10-18); no integration is implemented or real acceptance
 claimed. Each adapter lives behind injected ports and never owns CRM allocation,
 permission or money-state rules. Provider limits must be rechecked at implementation.
 
@@ -175,3 +175,10 @@ configured permissions can change connections; connection edits are audited. One
 provider never blocks unrelated CRM/auth/other provider work. Webhooks need public HTTPS;
 local tests use a tunnel/deployed test endpoint plus real provider-driven actions. Signed
 synthetic payloads validate parsing/forgery but never prove real delivery/completeness.
+
+## Developer 2 adapter handoff boundary
+
+Twilio/Stripe/Telegram SDK adapters, provider-specific signatures, normalization and
+error classification/tests belong to Developer 2/Gemini. Developer 1 owns HTTP routes,
+trusted workspace resolution, persistence, credentials, retries/domain effects and all UI.
+Google Calendar adapter and OAuth orchestration remain entirely Developer 1.

@@ -99,3 +99,8 @@ Product release remains blocked until all required acceptance is evidenced; firs
 success is not the complete problem statement. The first integrated milestone is real
 intake → one operational owner/custody → persisted deadline → atomic escalation → actual
 Telegram alert → audit/activity → permitted live dashboard/drill-down.
+
+Monthly reporting checks distinguish gross payments received from signed net collections
+after confirmed refunds, retain currency grouping and permit negative net totals. Five-
+second cadence is verified against installed Supabase/pg_cron and scheduler health during
+implementation; it never guarantees real notification receipt by itself.
