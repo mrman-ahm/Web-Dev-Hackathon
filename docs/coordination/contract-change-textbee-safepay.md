@@ -103,33 +103,33 @@ export const SafepayPaymentEventSchema = z.discriminatedUnion('kind', [
     providerPaymentRef: ReferenceSchema.nullable(), // token/reference
     paymentStatus: z.enum(['paid', 'unpaid', 'no_payment_required']),
     money: MoneySchema,
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('checkout.expired'),
     providerSessionRef: ReferenceSchema,
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('payment.succeeded'),
-    providerPaymentRef: ReferenceSchema,
+    providerPaymentRef: ReferenceSchema, // tracker
     money: MoneySchema,
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('payment.failed'),
-    providerPaymentRef: ReferenceSchema,
+    providerPaymentRef: ReferenceSchema, // tracker
     errorCode: CodeSchema,
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('refund.confirmed'),
-    providerPaymentRef: ReferenceSchema,
-    providerRefundRef: ReferenceSchema,
+    providerPaymentRef: ReferenceSchema, // tracker
+    providerRefundRef: ReferenceSchema, // eventToken or refund_token
     money: MoneySchema,
   }),
   z.strictObject({
