@@ -1,6 +1,9 @@
 # Requirements traceability
 
-Status: source analysis complete; product implementation **Not started** at this baseline.
+Status: source analysis complete; Foundation D implementation has begun on local feature
+branches. The `feat/auth-workspace-slice` branch contains a local Auth/workspace slice
+(commit `529adee`) with session-refresh follow-up under review; it is not merged. No
+official rubric criterion has verified full live acceptance at this checkpoint.
 Architecture is approved in principle, with corrected two-human ownership applied in [issue #2](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/2).
 
 The versioned [official DOCX](problem-statement.docx) is the authority. Acceptance text
@@ -9,21 +12,25 @@ There are **81 IDs: 31 functional + 36 integration + 14 quality**, not 71. No re
 was removed to match the prompt's arithmetic. Source columns are preserved; proposed
 ownership/artifacts/test methods are engineering mappings.
 
-D1 = Developer 1; D2 = Developer 2. GitHub task/PR links will be added by Foundation C
-once contracts are accepted. Status here means requirement acceptance, not issue workflow;
-change it only with implementation/evidence links. Issue labels/PR state carry day-to-day
-progress. Never infer Verified from a plan or mock external event.
+D1 = Developer 1; D2 = Developer 2. Foundation C task codes are in
+[`docs/coordination/backlog.json`](../coordination/backlog.json); provider issues are
+published as [Twilio #7](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7), [Stripe #5](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5),
+and [Telegram #6](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6). Status here means requirement
+acceptance, not issue workflow; change it only with implementation/evidence links. The
+official [rubric crosswalk](rubric-traceability.md) adds criteria R01–R10, their weights
+and exact full-mark conditions. Never infer Verified from a plan, UI-only feature, unit
+mock or external-provider fixture.
 
 ## Individually identified requirements
 
 | ID | Source requirement summary | Exact source acceptance criterion | Responsible module | Human owner | Dependencies | Planned implementation artifact | Verification method | Acceptance status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F1.1 | Sign up, log in, log out and persistent sessions | Signing up creates a new company workspace and makes the first user its Owner; refreshing the page keeps the user logged in | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.1 | Not started |
-| F1.2 | Three base levels: Owner, Admin, User | The Owner can invite users and assign levels; an Admin cannot modify the Owner; a User sees only what their permissions allow | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.2 | Not started |
-| F1.3 | Configurable permissions, not tied to role names | The Owner can grant or remove at least: view, create, edit, delete and export for CRM records, manage assignment rules, manage integrations, and view the audit log | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.3 | Not started |
-| F1.4 | Field-level protection | Opportunity value is hidden or masked for users without the matching permission in lists, detail pages and exports | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.4 | Not started |
-| F1.5 | Server-side enforcement | A direct API call by an unauthorized user is rejected; hiding a button is not sufficient | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.5 | Not started |
-| F1.6 | Workspace isolation | A user of one workspace can never read or change data of another workspace, including through guessed identifiers | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.6 | Not started |
+| F1.1 | Sign up, log in, log out and persistent sessions | Signing up creates a new company workspace and makes the first user its Owner; refreshing the page keeps the user logged in | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.1 | In progress: real local Auth/workspace flow; full persistent-session acceptance remains unverified |
+| F1.2 | Three base levels: Owner, Admin, User | The Owner can invite users and assign levels; an Admin cannot modify the Owner; a User sees only what their permissions allow | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.2 | Partial: Owner bootstrap exists; invitations and configurable role behavior remain incomplete |
+| F1.3 | Configurable permissions, not tied to role names | The Owner can grant or remove at least: view, create, edit, delete and export for CRM records, manage assignment rules, manage integrations, and view the audit log | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.3 | In progress: permission-admin task started; no complete interface/API acceptance yet |
+| F1.4 | Field-level protection | Opportunity value is hidden or masked for users without the matching permission in lists, detail pages and exports | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.4 | In progress: field-level enforcement is not yet demonstrated across CRM projections |
+| F1.5 | Server-side enforcement | A direct API call by an unauthorized user is rejected; hiding a button is not sufficient | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.5 | Partial: active-session/tenant protections have local test evidence; configurable permission denials remain unverified |
+| F1.6 | Workspace isolation | A user of one workspace can never read or change data of another workspace, including through guessed identifiers | identity/workspaces/permissions | D1 | Bootstrap, RLS, audit | `src/modules/identity/, src/modules/permissions/` | API + database: signup, session, role/field denial, guessed cross-tenant IDs; evidence tagged F1.6 | Partial: local Auth/database cross-tenant checks exist; complete API/RPC/Data API coverage remains unverified |
 | F2.1 | Contacts, companies and opportunities with relationships | A contact belongs to a company and can have many opportunities; the contact page shows all related records | crm (pipelines/custom fields) | D1 | Identity, permissions, audit | `src/modules/crm/` | Database + E2E: relationship, configuration, stage, filter and customer-view acceptance; evidence tagged F2.1 | Not started |
 | F2.2 | Custom fields created from the interface | An Admin adds a field with a name and a type (text, number, date, dropdown, checkbox) without code; it appears on forms and detail pages immediately | crm (pipelines/custom fields) | D1 | Identity, permissions, audit | `src/modules/crm/` | Database + E2E: relationship, configuration, stage, filter and customer-view acceptance; evidence tagged F2.2 | Not started |
 | F2.3 | Different fields for different pipelines | Two pipelines show different custom field sets while sharing the same contact information | crm (pipelines/custom fields) | D1 | Identity, permissions, audit | `src/modules/crm/` | Database + E2E: relationship, configuration, stage, filter and customer-view acceptance; evidence tagged F2.3 | Not started |

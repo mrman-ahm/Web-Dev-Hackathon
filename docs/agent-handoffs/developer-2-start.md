@@ -10,9 +10,16 @@ and shared contracts. Read [GEMINI](../../GEMINI.md), [AGENTS](../../AGENTS.md),
 ## Dependency and initial task references
 
 Architecture issue #2 / approved PR #3 supplies technical contracts; coordination issue
-#4 is the current aggregate tracker. Task codes in [catalog](../coordination/backlog.json):
-`twilio-adapter`, `stripe-adapter`, `telegram-adapter`. Per-task GitHub issues will be
-published in one batch; do not invent numbers. Human account mapping remains unconfirmed.
+#4 is the aggregate tracker. The primary human authorized a targeted issue batch for the
+three task codes in [catalog](../coordination/backlog.json): `twilio-adapter` (R05, 12
+points), then `stripe-adapter` (R06, 12 points), then `telegram-adapter` (R08, 4 points).
+Each task also contributes to cross-cutting R09 (10 points); this is not an additive task
+score. Published issues: [Twilio #7](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7),
+[Stripe #5](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5), and [Telegram #6](https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6). Start from the valid
+shared [feat/core-foundation branch](https://github.com/mrman-ahm/Web-Dev-Hackathon/tree/feat/core-foundation)
+at [commit 7ad387f](https://github.com/mrman-ahm/Web-Dev-Hackathon/commit/7ad387f), which
+contains executable provider ports. Human account mapping remains unconfirmed; no assignee
+is inferred.
 This document prepares your work; the GPT supervisor does not claim your agent started.
 
 The prerequisite is the committed shared scaffold/ports from Developer 1. If the baseline

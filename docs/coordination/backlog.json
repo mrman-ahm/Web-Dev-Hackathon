@@ -228,6 +228,12 @@
         "Q13",
         "Q14"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "architecture"
       ],
@@ -259,6 +265,16 @@
         "Q1",
         "Q6"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
@@ -288,6 +304,16 @@
         "F1.2",
         "F1.6"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces",
         "permission-admin"
@@ -316,6 +342,16 @@
         "Q2",
         "Q3"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces"
       ],
@@ -342,6 +378,16 @@
         "Q2",
         "Q3"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "permission-admin"
       ],
@@ -365,6 +411,16 @@
         "F2.1",
         "Q4",
         "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -390,6 +446,16 @@
       "requirements": [
         "F2.2",
         "F2.3"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "crm-records",
@@ -417,6 +483,16 @@
         "F1.4",
         "Q9"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "crm-records",
         "custom-fields",
@@ -441,6 +517,20 @@
       "requirements": [
         "F2.7",
         "F2.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "crm-records",
@@ -471,6 +561,16 @@
         "F2.4",
         "F2.5"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "crm-records"
       ],
@@ -497,6 +597,16 @@
         "Q8",
         "Q10"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "pipeline-core",
         "custom-fields",
@@ -521,6 +631,20 @@
         "F3.1",
         "Q3",
         "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "crm-records",
@@ -548,6 +672,16 @@
         "F3.8",
         "Q4",
         "Q5"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -579,6 +713,16 @@
         "F3.8",
         "Q5"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "lead-engine"
       ],
@@ -605,6 +749,16 @@
         "Q7",
         "Q8",
         "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "ack-escalation",
@@ -635,6 +789,24 @@
         "I5.7",
         "I5.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "permission-admin",
         "jobs-core",
@@ -662,6 +834,20 @@
         "I5.4",
         "I5.5",
         "I5.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -696,6 +882,20 @@
         "I1.9",
         "F3.1"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "integration-core",
         "lead-intake",
@@ -727,6 +927,16 @@
         "I2.6",
         "I2.7",
         "I2.8"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "integration-core",
@@ -760,6 +970,16 @@
         "I3.6",
         "I3.7"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "integration-core",
         "crm-records"
@@ -786,6 +1006,16 @@
         "I4.3",
         "I4.4"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
@@ -797,7 +1027,8 @@
         "Implements core-owned normalized send port without DB/secret/retry/domain orchestration",
         "Safe plain text/URLs, Telegram 429/retry_after/permanent/unknown result normalization",
         "Provider-specific unit/contract tests; no UI work or fake real-delivery claim"
-      ]
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/6"
     },
     {
       "code": "escalation-delivery",
@@ -810,6 +1041,20 @@
         "I4.2",
         "I4.3",
         "I4.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "ack-escalation",
@@ -835,6 +1080,16 @@
         "F4.2",
         "F4.3"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "auth-workspaces"
       ],
@@ -859,6 +1114,16 @@
         "Q7",
         "Q8",
         "Q10"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "scaffold",
@@ -886,6 +1151,16 @@
         "F5.4",
         "F5.5",
         "Q12"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "ack-escalation",
@@ -919,6 +1194,16 @@
         "Q8",
         "Q10"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold",
         "ui-foundation"
@@ -942,6 +1227,16 @@
         "Q11",
         "Q2",
         "F1.4"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "permission-admin",
@@ -968,6 +1263,12 @@
         "Q8",
         "Q10",
         "Q14"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "scaffold"
@@ -999,6 +1300,24 @@
         "Q2",
         "Q4",
         "Q6"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
       ],
       "dependencies": [
         "auth-workspaces",
@@ -1037,6 +1356,24 @@
         "Q5",
         "Q11"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "recovery-ui",
         "escalation-delivery",
@@ -1061,6 +1398,48 @@
       "lane": "core",
       "requirements": [
         "ALL"
+      ],
+      "rubric_criteria": [
+        {
+          "id": "R01",
+          "weight_points": 10
+        },
+        {
+          "id": "R02",
+          "weight_points": 12
+        },
+        {
+          "id": "R03",
+          "weight_points": 14
+        },
+        {
+          "id": "R04",
+          "weight_points": 8
+        },
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R07",
+          "weight_points": 10
+        },
+        {
+          "id": "R08",
+          "weight_points": 4
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        },
+        {
+          "id": "R10",
+          "weight_points": 8
+        }
       ],
       "dependencies": [
         "customer-history",
@@ -1095,6 +1474,12 @@
         "I5.6",
         "I5.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold",
         "jobs-core",
@@ -1128,6 +1513,16 @@
         "I1.8",
         "I1.9"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R05",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
@@ -1140,7 +1535,8 @@
         "Normalize verified events, outbound responses, temporary/permanent/unknown errors without domain/persistence/credentials orchestration",
         "Meaningful valid/forged/replayed/out-of-order fixture tests with synthetic credentials; real provider completeness remains separate acceptance",
         "No frontend, Auth/database/shared-contract/root dependency changes without approved coordination"
-      ]
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/7"
     },
     {
       "code": "stripe-adapter",
@@ -1157,6 +1553,16 @@
         "I2.7",
         "I2.8"
       ],
+      "rubric_criteria": [
+        {
+          "id": "R06",
+          "weight_points": 12
+        },
+        {
+          "id": "R09",
+          "weight_points": 10
+        }
+      ],
       "dependencies": [
         "scaffold"
       ],
@@ -1169,8 +1575,21 @@
         "Normalize verified events, outbound responses, temporary/permanent/unknown errors without domain/persistence/credentials orchestration",
         "Meaningful valid/forged/replayed/out-of-order fixture tests with synthetic credentials; real provider completeness remains separate acceptance",
         "No frontend, Auth/database/shared-contract/root dependency changes without approved coordination"
-      ]
+      ],
+      "github_issue": "https://github.com/mrman-ahm/Web-Dev-Hackathon/issues/5"
     }
   ],
-  "publication": "Bulk GitHub publication deferred per primary human request to focus local implementation; issue #4 tracks coordination. This catalog specifies tasks, not a second live progress board."
+  "publication": "Published provider task issues: twilio-adapter #7, stripe-adapter #5, telegram-adapter #6. Each issue links to the verified feat/core-foundation@7ad387f shared scaffold and records its rubric IDs/official weights. Other bulk task, label and project publication remains deferred; this catalog is task definitions, not a second progress board.",
+  "rubric_priority": {
+    "criteria": [
+      "R02",
+      "R03",
+      "R05",
+      "R06",
+      "R07",
+      "R08"
+    ],
+    "points": 64,
+    "note": "First integrated business-workflow priority; not a scope reduction. See docs/requirements/rubric-traceability.md."
+  }
 }
