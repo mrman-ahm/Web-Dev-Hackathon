@@ -1,6 +1,6 @@
 # Intentionally inactive: two human developers, GitHub-to-human mappings unconfirmed.
 # Developer 1/GPT: all frontend plus core/business/persistence/orchestration systems.
-# Developer 2/Gemini: Twilio, Stripe, Telegram provider adapters and provider tests only.
+# Developer 2/Gemini: textbee, Safepay Sandbox and Telegram provider adapters/tests only.
 # See docs/ownership.md for precise paths and review authority.
 # Confirm usernames/reviewer eligibility before adding executable ownership rules.
 # Never make a PR author the sole eligible required reviewer.
