@@ -66,7 +66,7 @@ describe('SafepayAdapter', () => {
       expect(result.kind).toBe('payment.succeeded');
     });
 
-    it('verifies valid HMAC-SHA256 signature when configured on sandbox endpoint', () => {
+    it('rejects HMAC-SHA256 signature with INVALID_SIGNATURE per strict merchant HMAC-SHA512 specification', () => {
       const payload = {
         token: 'evt_test_02',
         type: 'payment.succeeded',
@@ -79,10 +79,12 @@ describe('SafepayAdapter', () => {
       };
 
       const webhook = createWebhook(payload, credentials.webhookSecret, {}, 'sha256');
-      const result = adapter.verifyWebhook(webhook, credentials);
-
-      expect(result.provider).toBe('safepay');
-      expect(result.kind).toBe('payment.succeeded');
+      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
+      try {
+        adapter.verifyWebhook(webhook, credentials);
+      } catch (err: unknown) {
+        expect((err as AdapterVerificationError).code).toBe('INVALID_SIGNATURE');
+      }
     });
 
     it('verifies signature with sha512= prefix', () => {
@@ -90,7 +92,11 @@ describe('SafepayAdapter', () => {
         token: 'evt_test_03',
         type: 'payment.succeeded',
         created_at: { seconds: 1698754230 },
-        data: { tracker: 'track_prefix' },
+        data: {
+          tracker: 'track_prefix',
+          amount: 45000,
+          currency: 'PKR',
+        },
       };
       const rawString = JSON.stringify(payload);
       const rawBody = new TextEncoder().encode(rawString);
@@ -314,6 +320,44 @@ describe('SafepayAdapter', () => {
         expect(result.metadata?.paymentRequestId).toBe('550e8400-e29b-41d4-a716-446655440001');
       }
     });
+
+    it('rejects missing or malformed amount with INVALID_PAYLOAD rather than converting to zero', () => {
+      const payloadMissingAmount = {
+        token: 'evt_no_amount',
+        type: 'payment.succeeded',
+        created_at: { seconds: 1698754230 },
+        data: {
+          tracker: 'track_no_amount',
+          currency: 'PKR',
+        },
+      };
+
+      expect(() => adapter.verifyWebhook(createWebhook(payloadMissingAmount), credentials)).toThrow(
+        AdapterVerificationError,
+      );
+      try {
+        adapter.verifyWebhook(createWebhook(payloadMissingAmount), credentials);
+      } catch (err: unknown) {
+        expect((err as AdapterVerificationError).code).toBe('INVALID_PAYLOAD');
+      }
+    });
+
+    it('rejects invalid negative or non-numeric amount with INVALID_PAYLOAD', () => {
+      const payloadBadAmount = {
+        token: 'evt_bad_amount',
+        type: 'payment.succeeded',
+        created_at: { seconds: 1698754230 },
+        data: {
+          tracker: 'track_bad_amount',
+          amount: -500,
+          currency: 'PKR',
+        },
+      };
+
+      expect(() => adapter.verifyWebhook(createWebhook(payloadBadAmount), credentials)).toThrow(
+        AdapterVerificationError,
+      );
+    });
   });
 
   describe('createCheckout - Session Creation and Reference Handling', () => {
@@ -337,7 +381,7 @@ describe('SafepayAdapter', () => {
       cancelUrl: 'https://crm.example.com/payments/cancel',
     };
 
-    it('returns confirmed outcome with genuine provider tracker token', async () => {
+    it('returns confirmed outcome with genuine provider tracker token and application-owned expiry policy', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -347,12 +391,21 @@ describe('SafepayAdapter', () => {
         }),
       });
 
+      const before = Date.now();
       const outcome = await adapter.createCheckout(checkoutCommand, credentials);
+      const after = Date.now();
+
       expect(outcome.status).toBe('confirmed');
       if (outcome.status === 'confirmed') {
         expect(outcome.reference).toBe('track_order_live_9988');
         expect(outcome.value.providerSessionRef).toBe('track_order_live_9988');
-        expect(outcome.value.checkoutUrl).toContain('beacon=track_order_live_9988');
+        expect(outcome.value.checkoutUrl).toBe(
+          `https://sandbox.api.getsafepay.com/checkout/pay?beacon=track_order_live_9988&order_id=${checkoutCommand.paymentRequestId}`,
+        );
+        // Expiry must match application-owned 3600s policy
+        const expiryTime = new Date(outcome.value.expiresAt).getTime();
+        expect(expiryTime).toBeGreaterThanOrEqual(before + 3600 * 1000 - 1000);
+        expect(expiryTime).toBeLessThanOrEqual(after + 3600 * 1000 + 1000);
       }
     });
 

@@ -121,13 +121,22 @@ function extractMetadata(raw: unknown): CheckoutMetadata | null {
 }
 
 function extractAmountMinor(rawAmount: unknown): string {
-  if (typeof rawAmount === 'string' && /^\d+$/.test(rawAmount)) {
-    return rawAmount;
+  if (typeof rawAmount === 'string' && /^(0|[1-9]\d*)$/.test(rawAmount.trim())) {
+    return rawAmount.trim();
   }
-  if (typeof rawAmount === 'number' && Number.isFinite(rawAmount)) {
-    return Math.round(rawAmount).toString();
+  if (typeof rawAmount === 'number' && Number.isSafeInteger(rawAmount) && rawAmount >= 0) {
+    return rawAmount.toString();
   }
-  return '0';
+  // Never convert missing or malformed amount data to zero
+  throw new AdapterVerificationError('INVALID_PAYLOAD');
+}
+
+/** Safepay /order/v1/init API does not return a provider-derived session expiration timestamp.
+ * Application-owned checkout expiration policy: payment sessions expire after 1 hour (3600 seconds). */
+export const SAFEPAY_APPLICATION_CHECKOUT_EXPIRY_SECONDS = 3600;
+
+function computeApplicationCheckoutExpiry(): string {
+  return new Date(Date.now() + SAFEPAY_APPLICATION_CHECKOUT_EXPIRY_SECONDS * 1000).toISOString();
 }
 
 function extractProviderTimestamp(raw: unknown, fallbackObject?: Record<string, unknown>): string {
@@ -177,33 +186,21 @@ export class SafepayAdapter implements ISafepayAdapter {
     const cleanHeader = rawSignature.toLowerCase().trim();
     const normalizedSig = cleanHeader.startsWith('sha512=')
       ? cleanHeader.slice(7)
-      : cleanHeader.startsWith('sha256=')
-      ? cleanHeader.slice(7)
       : cleanHeader;
 
-    // 2. HMAC calculation (supporting documented SHA-512 and fallback SHA-256)
+    // 2. Strict HMAC-SHA512 calculation per official merchant webhook documentation
     const expectedSha512 = crypto
       .createHmac('sha512', credentials.webhookSecret)
       .update(input.rawBody)
       .digest('hex');
 
-    const expectedSha256 = crypto
-      .createHmac('sha256', credentials.webhookSecret)
-      .update(input.rawBody)
-      .digest('hex');
-
     const receivedBuf = Buffer.from(normalizedSig, 'utf8');
     const expected512Buf = Buffer.from(expectedSha512, 'utf8');
-    const expected256Buf = Buffer.from(expectedSha256, 'utf8');
 
-    const matches512 =
-      expected512Buf.length === receivedBuf.length &&
-      crypto.timingSafeEqual(expected512Buf, receivedBuf);
-    const matches256 =
-      expected256Buf.length === receivedBuf.length &&
-      crypto.timingSafeEqual(expected256Buf, receivedBuf);
-
-    if (!matches512 && !matches256) {
+    if (
+      expected512Buf.length !== receivedBuf.length ||
+      !crypto.timingSafeEqual(expected512Buf, receivedBuf)
+    ) {
       throw new AdapterVerificationError('INVALID_SIGNATURE');
     }
 
@@ -456,8 +453,8 @@ export class SafepayAdapter implements ISafepayAdapter {
           };
         }
 
-        const checkoutUrl = `${this.baseUrl}/checkout/pay?beacon=${token}&order_id=${input.metadata.paymentRequestId}`;
-        const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+        const checkoutUrl = `${this.baseUrl}/checkout/pay?beacon=${token}&order_id=${encodeURIComponent(input.metadata.paymentRequestId)}`;
+        const expiresAt = computeApplicationCheckoutExpiry();
 
         return {
           status: 'confirmed',
