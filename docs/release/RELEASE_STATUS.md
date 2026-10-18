@@ -21,7 +21,7 @@ Provider adapters were not merged because they require contract/security review 
 - Playwright: 4 desktop browser tests passed against local Supabase, covering signup/session, workspace persistence, CRM create/edit/reload/archive and stale/invalid flows.
 - Governance, requirement-map and patch-whitespace checks passed at the integration checkpoint. Hosted migration/deployment and real provider acceptance have not been run.
 
-No known failing automated checks remain at that checkpoint. Release docs and .env.example do not change application code; rerun CI on the PR head.
+No known failing automated checks remain. GitHub Actions Product and Governance workflows both passed on the PR head before the final documentation-status update. Hosted Supabase migrations, hosted Auth and live provider workflows are not covered by CI.
 
 ## Rubric matrix
 
