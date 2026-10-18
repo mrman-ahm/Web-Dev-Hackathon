@@ -37,6 +37,7 @@ select throws_ok('update public.audit_entries set event_type=''forged''','42501'
 select throws_ok('delete from public.audit_entries','42501','Audit entries are append-only','Audit DELETE blocked');
 select ok(not exists(select 1 from pg_roles where rolname in ('ubmp_reader','ubmp_command','ubmp_bootstrap') and (rolcanlogin or rolbypassrls or rolsuper)),'Narrow roles cannot login or bypass RLS');
 select ok(not pg_has_role('authenticated','ubmp_command','MEMBER'),'Authenticated cannot assume command role');
+select ok(not has_schema_privilege('ubmp_command','private','CREATE'),'Command role does not retain private schema CREATE privilege');
 select ok(not pg_has_role('anon','ubmp_reader','MEMBER'),'Anonymous has no reverse inheritance into private reader');
 select ok(not pg_has_role('authenticated','ubmp_reader','MEMBER'),'Authenticated has no inheritance into private reader');
 select ok(not has_function_privilege('anon','private.active_session()','EXECUTE'),'Anonymous cannot execute private session helper');
@@ -60,8 +61,11 @@ select is((select count(*)::int from public.memberships),1,'Membership RLS canno
 select is((select count(*)::int from public.get_workspace(:'w1')),1,'Own workspace lookup works');
 select throws_ok(format('select * from public.get_workspace(%L)',:'w2'),'PT403','FORBIDDEN','Cross-tenant RPC denied');
 select is((select count(*)::int from public.get_my_permissions(:'w1')),(select count(*)::int from public.permission_catalog),'Owner resolves trusted catalog permissions');
+select ok(not exists(select 1 from public.role_permissions where workspace_id=:'w2' and role_id=:'r2'),'Workspace owner cannot inspect role grants in another tenant');
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000002','session_id','20000000-0000-0000-0000-000000000002','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 select ok((select count(*)=2 from public.role_permissions where workspace_id=:'w2' and role_id=:'r2' and permission_key in ('integrations.calendar.connect_own','notifications.destination.manage_own')),'User defaults explicitly grant own calendar and notification destination actions');
 select ok(not exists(select 1 from public.role_permissions where workspace_id=:'w2' and role_id=:'r2' and permission_key in ('integrations.manage','integrations.history.view','notifications.failures.view')),'Own destination grants do not imply workspace credential or delivery administration');
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 select is((public.create_permission_role(:'w1','Manager',array['crm.contacts.view','crm.values.view'])->>'name'),'Manager','Owner creates a role with grants independent of its name');
 select id as manager_role from public.roles where workspace_id=:'w1' and name='Manager' \gset
 select is((public.update_permission_role(:'w1',:'manager_role',1,'Manager',array['crm.contacts.view'])->>'version')::int,2,'Role grant edit uses optimistic version and advances version');
@@ -110,6 +114,15 @@ select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0
 set local role authenticated;
 select is((select version::int from public.update_workspace(:'w2',1,'Permitted by grant','UTC','USD')),2,'Explicit permission permits command independently of base-level name');
 reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
+set local role authenticated;
+select is((select count(*)::int from public.audit_entries where workspace_id=:'w2' and event_type='workspace.updated'),0,'Workspace manager without audit permission cannot read the audit row');
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000002','session_id','20000000-0000-0000-0000-000000000002','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
+set local role authenticated;
+select is((select count(*)::int from public.audit_entries where workspace_id=:'w2' and event_type='workspace.updated'),1,'Workspace owner can read the appended update audit row');
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-0000-0000-000000000001','session_id','20000000-0000-0000-0000-000000000001','exp',extract(epoch from now()+interval '1 hour'))::text,true) is not null;
 update memberships set status='inactive' where workspace_id=:'w2' and user_id='10000000-0000-0000-0000-000000000001';
 set local role authenticated;
 select throws_ok(format('select * from public.get_workspace(%L)',:'w2'),'PT403','FORBIDDEN','Membership revocation acts without JWT refresh');

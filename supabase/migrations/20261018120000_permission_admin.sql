@@ -56,7 +56,9 @@ begin
   end if;
   return actor;
 end $$;
+grant create on schema private to ubmp_command;
 alter function private.require_permission_admin(uuid,boolean) owner to ubmp_command;
+revoke create on schema private from ubmp_command;
 revoke all on function private.require_permission_admin(uuid,boolean) from public, anon, authenticated;
 
 create function public.get_permission_configuration(p_workspace_id uuid) returns jsonb
