@@ -159,12 +159,13 @@ export class TextbeeAdapter implements ITextbeeAdapter {
     if (
       webhookEvent === 'MESSAGE_SENT' ||
       webhookEvent === 'MESSAGE_DELIVERED' ||
-      webhookEvent === 'MESSAGE_FAILED'
+      webhookEvent === 'MESSAGE_FAILED' ||
+      webhookEvent === 'UNKNOWN_STATE'
     ) {
       const smsId =
-        typeof payload.smsId === 'string'
+        typeof payload.smsId === 'string' && payload.smsId.length > 0
           ? payload.smsId
-          : typeof payload.smsBatchId === 'string'
+          : typeof payload.smsBatchId === 'string' && payload.smsBatchId.length > 0
           ? payload.smsBatchId
           : null;
       const recipient = typeof payload.recipient === 'string' ? payload.recipient : null;
@@ -173,13 +174,16 @@ export class TextbeeAdapter implements ITextbeeAdapter {
         throw new AdapterVerificationError('INVALID_PAYLOAD');
       }
 
-      let state: 'sent' | 'delivered' | 'failed';
+      let state: 'pending' | 'sent' | 'delivered' | 'failed';
       let errorCode: string | null = null;
 
       if (webhookEvent === 'MESSAGE_SENT') {
         state = 'sent';
       } else if (webhookEvent === 'MESSAGE_DELIVERED') {
         state = 'delivered';
+      } else if (webhookEvent === 'UNKNOWN_STATE') {
+        state = 'failed';
+        errorCode = 'UNKNOWN_STATE';
       } else {
         state = 'failed';
         const rawErr =
@@ -191,7 +195,8 @@ export class TextbeeAdapter implements ITextbeeAdapter {
         errorCode = sanitizeCode(rawErr) || 'MESSAGE_FAILED';
       }
 
-      const providerEventId = idempotencyKey || `textbee-${state}-${smsId}`;
+      const eventSuffix = webhookEvent === 'UNKNOWN_STATE' ? 'unknown' : state;
+      const providerEventId = idempotencyKey || `textbee-${eventSuffix}-${smsId}`;
 
       return TextbeeMessageEventSchema.parse({
         provider: 'textbee',
@@ -255,17 +260,32 @@ export class TextbeeAdapter implements ITextbeeAdapter {
         const data = (await response.json()) as Record<string, unknown>;
         const innerData = data?.data as Record<string, unknown> | undefined;
         const ref =
-          (typeof innerData?.smsBatchId === 'string' && innerData.smsBatchId) ||
-          (typeof innerData?.id === 'string' && innerData.id) ||
-          (typeof data?.smsBatchId === 'string' && data.smsBatchId) ||
-          (typeof data?.id === 'string' && data.id) ||
-          `batch-${Date.now()}`;
+          (typeof innerData?.smsBatchId === 'string' && innerData.smsBatchId.length > 0 && innerData.smsBatchId) ||
+          (typeof innerData?.id === 'string' && innerData.id.length > 0 && innerData.id) ||
+          (typeof data?.smsBatchId === 'string' && data.smsBatchId.length > 0 && data.smsBatchId) ||
+          (typeof data?.id === 'string' && data.id.length > 0 && data.id) ||
+          null;
+
+        if (!ref) {
+          return {
+            status: 'unknown',
+            code: 'MISSING_PROVIDER_REFERENCE',
+            reconciliationReference: input.deliveryId,
+          };
+        }
+
+        // Truthful submission state: API acceptance means queued/pending on device, not carrier-sent
+        const state: 'pending' | 'sent' =
+          (typeof innerData?.status === 'string' && innerData.status.toLowerCase() === 'sent') ||
+          (typeof data?.status === 'string' && data.status.toLowerCase() === 'sent')
+            ? 'sent'
+            : 'pending';
 
         return {
           status: 'confirmed',
           value: {
             providerMessageRef: ref,
-            state: 'sent',
+            state,
             channel: 'sms',
           },
           reference: ref,

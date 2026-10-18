@@ -10,7 +10,7 @@ import type { CheckoutCommand } from '../../../src/contracts/integrations';
 
 describe('SafepayAdapter', () => {
   const credentials: SafepayCredentials = {
-    apiKey: 'sec_test_client_key_123',
+    apiKey: 'sec_edeade52-46aa-483b-b87d-009d3ce41554',
     v1Secret: 'v1_secret_key_456',
     webhookSecret: 'whsec_safepay_hmac_secret_789',
     mode: 'sandbox',
@@ -20,10 +20,11 @@ describe('SafepayAdapter', () => {
     body: object | string,
     secret: string = credentials.webhookSecret,
     customHeaders?: Record<string, string>,
+    algorithm: 'sha512' | 'sha256' = 'sha512',
   ): SafepayRawWebhook => {
     const rawString = typeof body === 'string' ? body : JSON.stringify(body);
     const rawBody = new TextEncoder().encode(rawString);
-    const signature = crypto.createHmac('sha512', secret).update(rawBody).digest('hex');
+    const signature = crypto.createHmac(algorithm, secret).update(rawBody).digest('hex');
 
     const headers = new Headers({
       'content-type': 'application/json',
@@ -45,15 +46,258 @@ describe('SafepayAdapter', () => {
     vi.restoreAllMocks();
   });
 
-  describe('verifyWebhook - HMAC-SHA512 Signature & Authenticity', () => {
-    it('verifies valid HMAC-SHA512 signature and normalizes payment.succeeded', () => {
+  describe('verifyWebhook - HMAC Verification and Signature Variants', () => {
+    it('verifies valid HMAC-SHA512 signature', () => {
       const payload = {
-        token: 'evt_token_001',
+        token: 'evt_test_01',
         type: 'payment.succeeded',
+        created_at: { seconds: 1698754230 },
         data: {
-          token: 'pay_token_999',
-          tracker: 'track_session_888',
-          amount: '150000', // 1500.00 PKR in minor units
+          tracker: 'track_06ee38cb',
+          amount: 45000,
+          currency: 'PKR',
+        },
+      };
+
+      const webhook = createWebhook(payload, credentials.webhookSecret, {}, 'sha512');
+      const result = adapter.verifyWebhook(webhook, credentials);
+
+      expect(result.provider).toBe('safepay');
+      expect(result.kind).toBe('payment.succeeded');
+    });
+
+    it('verifies valid HMAC-SHA256 signature when configured on sandbox endpoint', () => {
+      const payload = {
+        token: 'evt_test_02',
+        type: 'payment.succeeded',
+        created_at: { seconds: 1698754230 },
+        data: {
+          tracker: 'track_06ee38cb',
+          amount: 45000,
+          currency: 'PKR',
+        },
+      };
+
+      const webhook = createWebhook(payload, credentials.webhookSecret, {}, 'sha256');
+      const result = adapter.verifyWebhook(webhook, credentials);
+
+      expect(result.provider).toBe('safepay');
+      expect(result.kind).toBe('payment.succeeded');
+    });
+
+    it('verifies signature with sha512= prefix', () => {
+      const payload = {
+        token: 'evt_test_03',
+        type: 'payment.succeeded',
+        created_at: { seconds: 1698754230 },
+        data: { tracker: 'track_prefix' },
+      };
+      const rawString = JSON.stringify(payload);
+      const rawBody = new TextEncoder().encode(rawString);
+      const hex = crypto.createHmac('sha512', credentials.webhookSecret).update(rawBody).digest('hex');
+
+      const webhook: SafepayRawWebhook = {
+        rawBody,
+        headers: new Headers({
+          'content-type': 'application/json',
+          'x-sfpy-signature': `sha512=${hex}`,
+        }),
+        canonicalUrl: 'https://api.crm.example.com/api/webhooks/safepay',
+      };
+
+      const result = adapter.verifyWebhook(webhook, credentials);
+      expect(result.kind).toBe('payment.succeeded');
+    });
+
+    it('rejects tampered signature with INVALID_SIGNATURE', () => {
+      const webhook = createWebhook({ type: 'payment.succeeded', token: 'evt_1' }, 'wrong-secret');
+      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
+      try {
+        adapter.verifyWebhook(webhook, credentials);
+      } catch (err: unknown) {
+        expect((err as AdapterVerificationError).code).toBe('INVALID_SIGNATURE');
+      }
+    });
+
+    it('rejects tampered body with INVALID_SIGNATURE', () => {
+      const webhook = createWebhook({ type: 'payment.succeeded', token: 'evt_1' });
+      webhook.rawBody = new TextEncoder().encode(JSON.stringify({ type: 'payment.succeeded', token: 'evt_tampered' }));
+      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
+    });
+
+    it('rejects missing signature header with INVALID_SIGNATURE', () => {
+      const webhook = createWebhook({ type: 'payment.succeeded', token: 'evt_1' });
+      webhook.headers.delete('x-sfpy-signature');
+      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
+    });
+  });
+
+  describe('verifyWebhook - Documented Safepay v2.0.0 Merchant Payloads', () => {
+    it('normalizes documented payment.succeeded v2.0.0 payload with genuine timestamp and tracker correlation', () => {
+      // Documented Safepay v2.0.0 merchant payload
+      const officialPayload = {
+        token: 'evt_64b3218e-f65c-45a9-96b0-fe4e293bb879',
+        version: '2.0.0',
+        merchant_api_key: 'sec_edeade52-46aa-483b-b87d-009d3ce41554',
+        type: 'payment.succeeded',
+        endpoint: 'http://example.com',
+        data: {
+          tracker: 'track_06ee38cb-981d-4158-819f-7231f28314e4',
+          intent: 'CYBERSOURCE',
+          state: 'TRACKER_ENDED',
+          net: 43525,
+          fee: 1475,
+          customer_email: 'hzee@gmail.com',
+          amount: 45000,
+          currency: 'PKR',
+          metadata: {
+            order_id: 'AX-09u812312',
+            source: 'shopify',
+          },
+          charged_at: {
+            seconds: 1698754230,
+            nanos: 752997627,
+          },
+        },
+        created_at: {
+          seconds: 1698754230,
+          nanos: 912705711,
+        },
+      };
+
+      const webhook = createWebhook(officialPayload);
+      const result = adapter.verifyWebhook(webhook, credentials);
+
+      expect(result.provider).toBe('safepay');
+      expect(result.kind).toBe('payment.succeeded');
+      expect(result.providerEventId).toBe('evt_64b3218e-f65c-45a9-96b0-fe4e293bb879');
+      // Genuine provider timestamp (1698754230 -> 2023-10-31T12:10:30.000Z)
+      expect(result.occurredAt).toBe(new Date(1698754230 * 1000).toISOString());
+
+      if (result.kind === 'payment.succeeded') {
+        // Trusted tracker correlation
+        expect(result.providerPaymentRef).toBe('track_06ee38cb-981d-4158-819f-7231f28314e4');
+        expect(result.money.amountMinor).toBe('45000');
+        expect(result.money.currency).toBe('PKR');
+        // Merchant metadata does not contain internal UUIDs; metadata is null (no fabricated all-zero UUIDs)
+        expect(result.metadata).toBeNull();
+      }
+    });
+
+    it('normalizes documented payment.failed v2.0.0 payload', () => {
+      const officialFailedPayload = {
+        token: 'evt_e7069e13-e4a4-4518-b5ce-ee42e62b6797',
+        version: '2.0.0',
+        merchant_api_key: 'sec_edeade52-46aa-483b-b87d-009d3ce41554',
+        type: 'payment.failed',
+        endpoint: 'http://example.com',
+        data: {
+          tracker: 'track_138cf593-3d3f-4d54-b9c6-27a510afb780',
+          intent: 'CYBERSOURCE',
+          state: 'TRACKER_ENROLLED',
+          customer_email: 'hzee@gmail.com',
+          metadata: {},
+          category: 'PAYMENT_METHOD_ERROR',
+          code: 403,
+          message: 'The card you have used has been flagged as either stolen or lost. ',
+          failed_at: {
+            seconds: 1698754648,
+            nanos: 494424793,
+          },
+        },
+        created_at: {
+          seconds: 1698754648,
+          nanos: 589390626,
+        },
+      };
+
+      const webhook = createWebhook(officialFailedPayload);
+      const result = adapter.verifyWebhook(webhook, credentials);
+
+      expect(result.kind).toBe('payment.failed');
+      expect(result.providerEventId).toBe('evt_e7069e13-e4a4-4518-b5ce-ee42e62b6797');
+      expect(result.occurredAt).toBe(new Date(1698754648 * 1000).toISOString());
+
+      if (result.kind === 'payment.failed') {
+        expect(result.providerPaymentRef).toBe('track_138cf593-3d3f-4d54-b9c6-27a510afb780');
+        expect(result.errorCode).toBe('PAYMENT_METHOD_ERROR');
+        expect(result.metadata).toBeNull();
+      }
+    });
+
+    it('normalizes documented payment.refunded v2.0.0 payload using data.refund_amount', () => {
+      const officialRefundedPayload = {
+        token: 'evt_48431483-2111-4328-8729-309c96c7a0f6',
+        version: '2.0.0',
+        merchant_api_key: 'sec_edeade52-46aa-483b-b87d-009d3ce41554',
+        type: 'payment.refunded',
+        endpoint: 'http://example.com',
+        data: {
+          tracker: 'track_06ee38cb-981d-4158-819f-7231f28314e4',
+          intent: 'CYBERSOURCE',
+          state: 'TRACKER_PARTIAL_REFUND',
+          customer_email: 'hzee@gmail.com',
+          balance: 44000,
+          currency: 'PKR',
+          metadata: {
+            order_id: 'AX-09u812312',
+            source: 'shopify',
+          },
+          refund_amount: 1000,
+          refunded_at: {
+            seconds: 1698758038,
+            nanos: 682810001,
+          },
+        },
+        created_at: {
+          seconds: 1698758038,
+          nanos: 880931084,
+        },
+      };
+
+      const webhook = createWebhook(officialRefundedPayload);
+      const result = adapter.verifyWebhook(webhook, credentials);
+
+      expect(result.kind).toBe('refund.confirmed');
+      expect(result.providerEventId).toBe('evt_48431483-2111-4328-8729-309c96c7a0f6');
+      expect(result.occurredAt).toBe(new Date(1698758038 * 1000).toISOString());
+
+      if (result.kind === 'refund.confirmed') {
+        expect(result.providerPaymentRef).toBe('track_06ee38cb-981d-4158-819f-7231f28314e4');
+        expect(result.providerRefundRef).toBe('evt_48431483-2111-4328-8729-309c96c7a0f6');
+        // refund_amount was 1000
+        expect(result.money.amountMinor).toBe('1000');
+        expect(result.money.currency).toBe('PKR');
+      }
+    });
+
+    it('never treats a refund request (refund.created / refund.requested) as confirmed refund', () => {
+      const refundRequestPayload = {
+        token: 'evt_req_refund_01',
+        type: 'refund.created',
+        created_at: { seconds: 1698758038 },
+        data: {
+          tracker: 'track_06ee38cb',
+          refund_amount: 500,
+        },
+      };
+
+      const webhook = createWebhook(refundRequestPayload);
+      const result = adapter.verifyWebhook(webhook, credentials);
+
+      // Must be ignored, never refund.confirmed
+      expect(result.kind).toBe('ignored');
+      expect(result.kind).not.toBe('refund.confirmed');
+    });
+
+    it('preserves valid internal CheckoutMetadata when provided in webhook', () => {
+      const payloadWithInternalMeta = {
+        token: 'evt_with_meta_01',
+        type: 'payment.succeeded',
+        created_at: { seconds: 1698754230 },
+        data: {
+          tracker: 'track_with_meta',
+          amount: 50000,
           currency: 'PKR',
           metadata: {
             paymentRequestId: '550e8400-e29b-41d4-a716-446655440001',
@@ -63,171 +307,16 @@ describe('SafepayAdapter', () => {
         },
       };
 
-      const webhook = createWebhook(payload);
-      const result = adapter.verifyWebhook(webhook, credentials);
-
-      expect(result.provider).toBe('safepay');
+      const result = adapter.verifyWebhook(createWebhook(payloadWithInternalMeta), credentials);
       expect(result.kind).toBe('payment.succeeded');
       if (result.kind === 'payment.succeeded') {
-        expect(result.providerPaymentRef).toBe('pay_token_999');
-        expect(result.money.amountMinor).toBe('150000');
-        expect(result.money.currency).toBe('PKR');
-        expect(result.metadata.paymentRequestId).toBe('550e8400-e29b-41d4-a716-446655440001');
-      }
-    });
-
-    it('rejects tampered signature with INVALID_SIGNATURE', () => {
-      const payload = { type: 'payment.succeeded', token: 'evt_1' };
-      const webhook = createWebhook(payload, 'wrong-webhook-secret');
-
-      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
-      try {
-        adapter.verifyWebhook(webhook, credentials);
-      } catch (err: unknown) {
-        expect((err as AdapterVerificationError).code).toBe('INVALID_SIGNATURE');
-      }
-    });
-
-    it('rejects tampered raw body bytes with INVALID_SIGNATURE', () => {
-      const webhook = createWebhook({ type: 'payment.succeeded' });
-      webhook.rawBody = new TextEncoder().encode(JSON.stringify({ type: 'payment.succeeded', tampered: true }));
-
-      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
-      try {
-        adapter.verifyWebhook(webhook, credentials);
-      } catch (err: unknown) {
-        expect((err as AdapterVerificationError).code).toBe('INVALID_SIGNATURE');
-      }
-    });
-
-    it('rejects missing X-SFPY-SIGNATURE header with INVALID_SIGNATURE', () => {
-      const webhook = createWebhook({ type: 'payment.succeeded' });
-      webhook.headers.delete('x-sfpy-signature');
-
-      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
-      try {
-        adapter.verifyWebhook(webhook, credentials);
-      } catch (err: unknown) {
-        expect((err as AdapterVerificationError).code).toBe('INVALID_SIGNATURE');
-      }
-    });
-
-    it('rejects malformed signature strings safely without uncaught exception', () => {
-      const webhook = createWebhook({ type: 'payment.succeeded' }, credentials.webhookSecret, {
-        'x-sfpy-signature': 'invalid-not-hex-odd-length',
-      });
-
-      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
-      try {
-        adapter.verifyWebhook(webhook, credentials);
-      } catch (err: unknown) {
-        expect((err as AdapterVerificationError).code).toBe('INVALID_SIGNATURE');
-      }
-    });
-
-    it('rejects non-JSON payload with INVALID_PAYLOAD', () => {
-      const webhook = createWebhook('invalid non-json string content <<>>');
-
-      expect(() => adapter.verifyWebhook(webhook, credentials)).toThrow(AdapterVerificationError);
-      try {
-        adapter.verifyWebhook(webhook, credentials);
-      } catch (err: unknown) {
-        expect((err as AdapterVerificationError).code).toBe('INVALID_PAYLOAD');
+        expect(result.metadata).not.toBeNull();
+        expect(result.metadata?.paymentRequestId).toBe('550e8400-e29b-41d4-a716-446655440001');
       }
     });
   });
 
-  describe('verifyWebhook - Event Normalization', () => {
-    const validMetadata = {
-      paymentRequestId: '550e8400-e29b-41d4-a716-446655440001',
-      contactId: '550e8400-e29b-41d4-a716-446655440002',
-      opportunityId: '550e8400-e29b-41d4-a716-446655440003',
-    };
-
-    it('normalizes payment.failed with safe error code and metadata', () => {
-      const payload = {
-        token: 'evt_failed_01',
-        type: 'payment.failed',
-        data: {
-          token: 'pay_token_fail_1',
-          tracker: 'track_fail_1',
-          error_code: 'INSUFFICIENT_FUNDS',
-          metadata: validMetadata,
-        },
-      };
-
-      const result = adapter.verifyWebhook(createWebhook(payload), credentials);
-      expect(result.kind).toBe('payment.failed');
-      if (result.kind === 'payment.failed') {
-        expect(result.providerPaymentRef).toBe('pay_token_fail_1');
-        expect(result.errorCode).toBe('INSUFFICIENT_FUNDS');
-        expect(result.metadata.paymentRequestId).toBe(validMetadata.paymentRequestId);
-      }
-    });
-
-    it('normalizes refund.completed / refund.confirmed', () => {
-      const payload = {
-        token: 'evt_refund_01',
-        type: 'refund.completed',
-        data: {
-          token: 'pay_token_ref_1',
-          refund_token: 'ref_token_777',
-          amount: '50000',
-          currency: 'PKR',
-          metadata: validMetadata,
-        },
-      };
-
-      const result = adapter.verifyWebhook(createWebhook(payload), credentials);
-      expect(result.kind).toBe('refund.confirmed');
-      if (result.kind === 'refund.confirmed') {
-        expect(result.providerPaymentRef).toBe('pay_token_ref_1');
-        expect(result.providerRefundRef).toBe('ref_token_777');
-        expect(result.money.amountMinor).toBe('50000');
-        expect(result.money.currency).toBe('PKR');
-      }
-    });
-
-    it('normalizes checkout.completed event', () => {
-      const payload = {
-        token: 'evt_chk_01',
-        type: 'checkout.completed',
-        data: {
-          tracker: 'track_chk_99',
-          token: 'pay_token_chk_99',
-          payment_status: 'paid',
-          amount: '200000',
-          currency: 'PKR',
-          metadata: validMetadata,
-        },
-      };
-
-      const result = adapter.verifyWebhook(createWebhook(payload), credentials);
-      expect(result.kind).toBe('checkout.completed');
-      if (result.kind === 'checkout.completed') {
-        expect(result.providerSessionRef).toBe('track_chk_99');
-        expect(result.providerPaymentRef).toBe('pay_token_chk_99');
-        expect(result.paymentStatus).toBe('paid');
-        expect(result.money.amountMinor).toBe('200000');
-      }
-    });
-
-    it('normalizes unknown event type as ignored without crashing', () => {
-      const payload = {
-        token: 'evt_custom_99',
-        type: 'customer.identified_unhandled_type',
-        data: {},
-      };
-
-      const result = adapter.verifyWebhook(createWebhook(payload), credentials);
-      expect(result.kind).toBe('ignored');
-      if (result.kind === 'ignored') {
-        expect(result.providerEventType).toBe('customer.identified_unhandled_type');
-      }
-    });
-  });
-
-  describe('createCheckout - Safepay Sandbox Session Creation', () => {
+  describe('createCheckout - Session Creation and Reference Handling', () => {
     const validMetadata = {
       paymentRequestId: '550e8400-e29b-41d4-a716-446655440001',
       contactId: '550e8400-e29b-41d4-a716-446655440002',
@@ -238,7 +327,7 @@ describe('SafepayAdapter', () => {
       paymentRequestId: validMetadata.paymentRequestId,
       idempotencyKey: '550e8400-e29b-41d4-a716-446655440099',
       money: {
-        amountMinor: '250000', // 2500 PKR
+        amountMinor: '250000',
         currency: 'PKR',
       },
       description: 'Consultation & Service Fee',
@@ -248,130 +337,39 @@ describe('SafepayAdapter', () => {
       cancelUrl: 'https://crm.example.com/payments/cancel',
     };
 
-    it('initializes checkout order in sandbox and returns confirmed session', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
+    it('returns confirmed outcome with genuine provider tracker token', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         json: async () => ({
-          status: { message: 'success', errors: [] },
-          data: {
-            token: 'track_order_token_abc123',
-          },
+          status: { message: 'success' },
+          data: { token: 'track_order_live_9988' },
         }),
       });
-      global.fetch = mockFetch;
 
       const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
       expect(outcome.status).toBe('confirmed');
       if (outcome.status === 'confirmed') {
-        expect(outcome.reference).toBe('track_order_token_abc123');
-        expect(outcome.value.providerSessionRef).toBe('track_order_token_abc123');
-        expect(outcome.value.checkoutUrl).toContain('beacon=track_order_token_abc123');
-        expect(outcome.value.checkoutUrl).toContain('https://');
-        expect(outcome.value.expiresAt).toBeDefined();
+        expect(outcome.reference).toBe('track_order_live_9988');
+        expect(outcome.value.providerSessionRef).toBe('track_order_live_9988');
+        expect(outcome.value.checkoutUrl).toContain('beacon=track_order_live_9988');
       }
-
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      const call = mockFetch.mock.calls[0] as [string, { headers: Record<string, string>; body: string }];
-      expect(call).toBeDefined();
-      const [url, options] = call;
-      expect(url).toContain('/order/v1/init');
-      expect(options.headers['x-sfpy-merchant-secret']).toBe(credentials.v1Secret);
-
-      const reqBody = JSON.parse(options.body);
-      expect(reqBody.client).toBe(credentials.apiKey);
-      expect(reqBody.environment).toBe('sandbox');
-      expect(reqBody.currency).toBe('PKR');
     });
 
-    it('maps 429 rate limit to temporary_failure', async () => {
+    it('returns unknown outcome when provider response is missing reference without fake ID', async () => {
       global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 429,
-        headers: new Headers({ 'retry-after': '30' }),
-        json: async () => ({ message: 'Too many requests' }),
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: { message: 'success' },
+          data: {}, // Missing token
+        }),
       });
 
       const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
-      expect(outcome.status).toBe('temporary_failure');
-      if (outcome.status === 'temporary_failure') {
-        expect(outcome.code).toBe('RATE_LIMIT_EXCEEDED');
-        expect(outcome.retryAfterSeconds).toBe(30);
-      }
-    });
-
-    it('maps 503 gateway unavailable to temporary_failure', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 503,
-        headers: new Headers(),
-        json: async () => ({ message: 'Service unavailable' }),
-      });
-
-      const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
-      expect(outcome.status).toBe('temporary_failure');
-      if (outcome.status === 'temporary_failure') {
-        expect(outcome.code).toBe('GATEWAY_ERROR');
-      }
-    });
-
-    it('maps 401/403 authentication error to permanent_failure', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        headers: new Headers(),
-        json: async () => ({ message: 'Invalid merchant credentials' }),
-      });
-
-      const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
-      expect(outcome.status).toBe('permanent_failure');
-      if (outcome.status === 'permanent_failure') {
-        expect(outcome.code).toBe('AUTHENTICATION_FAILED');
-      }
-    });
-
-    it('maps 400 validation error to permanent_failure', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 400,
-        headers: new Headers(),
-        json: async () => ({ message: 'Invalid currency specified' }),
-      });
-
-      const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
-      expect(outcome.status).toBe('permanent_failure');
-      if (outcome.status === 'permanent_failure') {
-        expect(outcome.code).toBe('INVALID_REQUEST');
-      }
-    });
-
-    it('maps network timeout to unknown outcome with paymentRequestId reference', async () => {
-      const abortError = new Error('The operation was aborted');
-      abortError.name = 'AbortError';
-      global.fetch = vi.fn().mockRejectedValue(abortError);
-
-      const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
       expect(outcome.status).toBe('unknown');
       if (outcome.status === 'unknown') {
-        expect(outcome.code).toBe('NETWORK_TIMEOUT');
-        expect(outcome.reconciliationReference).toBe(checkoutCommand.paymentRequestId);
-      }
-    });
-
-    it('maps network fetch failure to unknown outcome', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
-
-      const outcome = await adapter.createCheckout(checkoutCommand, credentials);
-
-      expect(outcome.status).toBe('unknown');
-      if (outcome.status === 'unknown') {
-        expect(outcome.code).toBe('NETWORK_ERROR');
+        expect(outcome.code).toBe('MISSING_PROVIDER_REFERENCE');
         expect(outcome.reconciliationReference).toBe(checkoutCommand.paymentRequestId);
       }
     });

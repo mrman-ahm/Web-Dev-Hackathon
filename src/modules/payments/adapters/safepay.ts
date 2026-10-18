@@ -39,27 +39,27 @@ export const SafepayPaymentEventSchema = z.discriminatedUnion('kind', [
     providerPaymentRef: z.string().min(1).nullable(),
     paymentStatus: z.enum(['paid', 'unpaid', 'no_payment_required']),
     money: MoneySchema,
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('checkout.expired'),
     providerSessionRef: z.string().min(1),
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('payment.succeeded'),
     providerPaymentRef: z.string().min(1),
     money: MoneySchema,
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
     kind: z.literal('payment.failed'),
     providerPaymentRef: z.string().min(1),
     errorCode: z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/),
-    metadata: CheckoutMetadataSchema,
+    metadata: CheckoutMetadataSchema.nullable(),
   }),
   z.strictObject({
     ...safepayIdentity,
@@ -85,21 +85,39 @@ export interface ISafepayAdapter {
 }
 
 function sanitizeErrorCode(code: unknown): string {
+  if (typeof code === 'number' && Number.isFinite(code)) {
+    return `HTTP_${code}`;
+  }
   if (typeof code !== 'string' || !code) return 'PAYMENT_FAILED';
   const clean = code.toUpperCase().replace(/[^A-Z0-9_]/g, '_').slice(0, 80);
   return /^[A-Z][A-Z0-9_]{0,79}$/.test(clean) ? clean : 'PAYMENT_FAILED';
 }
 
-function extractMetadata(raw: unknown): CheckoutMetadata {
+function extractMetadata(raw: unknown): CheckoutMetadata | null {
   const parsed = CheckoutMetadataSchema.safeParse(raw);
   if (parsed.success) {
     return parsed.data;
   }
-  return {
-    paymentRequestId: '00000000-0000-0000-0000-000000000000',
-    contactId: '00000000-0000-0000-0000-000000000000',
-    opportunityId: '00000000-0000-0000-0000-000000000000',
-  };
+  // Check if raw contains order_id formatted as UUID
+  if (typeof raw === 'object' && raw !== null) {
+    const obj = raw as Record<string, unknown>;
+    const orderId = typeof obj.order_id === 'string' ? obj.order_id : null;
+    const paymentReqId = typeof obj.paymentRequestId === 'string' ? obj.paymentRequestId : null;
+    const candidateId = paymentReqId || orderId;
+    if (candidateId && z.uuid().safeParse(candidateId).success) {
+      const contactId = typeof obj.contactId === 'string' && z.uuid().safeParse(obj.contactId).success ? obj.contactId : null;
+      const opportunityId = typeof obj.opportunityId === 'string' && z.uuid().safeParse(obj.opportunityId).success ? obj.opportunityId : null;
+      if (contactId && opportunityId) {
+        return {
+          paymentRequestId: candidateId,
+          contactId,
+          opportunityId,
+        };
+      }
+    }
+  }
+  // Return null rather than fabricating fake zero-UUIDs
+  return null;
 }
 
 function extractAmountMinor(rawAmount: unknown): string {
@@ -110,6 +128,36 @@ function extractAmountMinor(rawAmount: unknown): string {
     return Math.round(rawAmount).toString();
   }
   return '0';
+}
+
+function extractProviderTimestamp(raw: unknown, fallbackObject?: Record<string, unknown>): string {
+  const candidates = [
+    raw,
+    fallbackObject?.charged_at,
+    fallbackObject?.refunded_at,
+    fallbackObject?.failed_at,
+    fallbackObject?.created_at,
+  ];
+
+  for (const c of candidates) {
+    if (typeof c === 'object' && c !== null && 'seconds' in c) {
+      const secs = (c as { seconds: number }).seconds;
+      if (typeof secs === 'number' && Number.isFinite(secs)) {
+        return new Date(secs * 1000).toISOString();
+      }
+    }
+    if (typeof c === 'string' && c.length > 0) {
+      const d = new Date(c);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString();
+      }
+    }
+    if (typeof c === 'number' && Number.isFinite(c)) {
+      return new Date(c > 1e11 ? c : c * 1000).toISOString();
+    }
+  }
+
+  throw new AdapterVerificationError('INVALID_PAYLOAD');
 }
 
 export class SafepayAdapter implements ISafepayAdapter {
@@ -126,19 +174,36 @@ export class SafepayAdapter implements ISafepayAdapter {
       throw new AdapterVerificationError('INVALID_SIGNATURE');
     }
 
-    // 2. HMAC-SHA512 calculation
-    const expectedSignature = crypto
+    const cleanHeader = rawSignature.toLowerCase().trim();
+    const normalizedSig = cleanHeader.startsWith('sha512=')
+      ? cleanHeader.slice(7)
+      : cleanHeader.startsWith('sha256=')
+      ? cleanHeader.slice(7)
+      : cleanHeader;
+
+    // 2. HMAC calculation (supporting documented SHA-512 and fallback SHA-256)
+    const expectedSha512 = crypto
       .createHmac('sha512', credentials.webhookSecret)
       .update(input.rawBody)
       .digest('hex');
 
-    const expectedBuf = Buffer.from(expectedSignature, 'utf8');
-    const receivedBuf = Buffer.from(rawSignature.toLowerCase().trim(), 'utf8');
+    const expectedSha256 = crypto
+      .createHmac('sha256', credentials.webhookSecret)
+      .update(input.rawBody)
+      .digest('hex');
 
-    if (
-      expectedBuf.length !== receivedBuf.length ||
-      !crypto.timingSafeEqual(expectedBuf, receivedBuf)
-    ) {
+    const receivedBuf = Buffer.from(normalizedSig, 'utf8');
+    const expected512Buf = Buffer.from(expectedSha512, 'utf8');
+    const expected256Buf = Buffer.from(expectedSha256, 'utf8');
+
+    const matches512 =
+      expected512Buf.length === receivedBuf.length &&
+      crypto.timingSafeEqual(expected512Buf, receivedBuf);
+    const matches256 =
+      expected256Buf.length === receivedBuf.length &&
+      crypto.timingSafeEqual(expected256Buf, receivedBuf);
+
+    if (!matches512 && !matches256) {
       throw new AdapterVerificationError('INVALID_SIGNATURE');
     }
 
@@ -166,25 +231,32 @@ export class SafepayAdapter implements ISafepayAdapter {
       throw new AdapterVerificationError('INVALID_PAYLOAD');
     }
 
+    // Stable provider event ID
     const eventToken =
-      typeof payload.token === 'string'
+      typeof payload.token === 'string' && payload.token.length > 0
         ? payload.token
-        : typeof payload.id === 'string'
+        : typeof payload.id === 'string' && payload.id.length > 0
         ? payload.id
-        : `evt_${Date.now()}`;
+        : null;
 
-    const occurredAt = new Date().toISOString();
+    if (!eventToken) {
+      throw new AdapterVerificationError('INVALID_PAYLOAD');
+    }
+
     const dataObj = (payload.data && typeof payload.data === 'object' ? payload.data : {}) as Record<
       string,
       unknown
     >;
 
-    if (eventType === 'payment.succeeded' || eventType === 'payment.completed') {
+    // Extract genuine provider timestamp
+    const occurredAt = extractProviderTimestamp(payload.created_at, dataObj);
+
+    if (eventType === 'payment.succeeded') {
       const providerPaymentRef =
-        typeof dataObj.token === 'string'
-          ? dataObj.token
-          : typeof dataObj.tracker === 'string'
+        typeof dataObj.tracker === 'string' && dataObj.tracker.length > 0
           ? dataObj.tracker
+          : typeof dataObj.token === 'string' && dataObj.token.length > 0
+          ? dataObj.token
           : eventToken;
 
       const currency = typeof dataObj.currency === 'string' ? dataObj.currency.toUpperCase() : 'PKR';
@@ -208,13 +280,15 @@ export class SafepayAdapter implements ISafepayAdapter {
 
     if (eventType === 'payment.failed') {
       const providerPaymentRef =
-        typeof dataObj.token === 'string'
-          ? dataObj.token
-          : typeof dataObj.tracker === 'string'
+        typeof dataObj.tracker === 'string' && dataObj.tracker.length > 0
           ? dataObj.tracker
+          : typeof dataObj.token === 'string' && dataObj.token.length > 0
+          ? dataObj.token
           : eventToken;
 
-      const errorCode = sanitizeErrorCode(dataObj.error_code || dataObj.error || dataObj.message);
+      const rawCode =
+        dataObj.category || dataObj.code || dataObj.error_code || dataObj.error || dataObj.message;
+      const errorCode = sanitizeErrorCode(rawCode);
       const metadata = extractMetadata(dataObj.metadata || payload.metadata);
 
       return SafepayPaymentEventSchema.parse({
@@ -229,23 +303,27 @@ export class SafepayAdapter implements ISafepayAdapter {
       });
     }
 
-    if (eventType === 'refund.completed' || eventType === 'refund.created') {
+    // Documented merchant event: payment.refunded (or refund.completed)
+    if (eventType === 'payment.refunded' || eventType === 'refund.completed') {
       const providerPaymentRef =
-        typeof dataObj.token === 'string'
-          ? dataObj.token
-          : typeof dataObj.tracker === 'string'
+        typeof dataObj.tracker === 'string' && dataObj.tracker.length > 0
           ? dataObj.tracker
+          : typeof dataObj.token === 'string' && dataObj.token.length > 0
+          ? dataObj.token
           : eventToken;
 
+      // Stable provider refund reference from refund_token or eventToken
       const providerRefundRef =
-        typeof dataObj.refund_token === 'string'
+        typeof dataObj.refund_token === 'string' && dataObj.refund_token.length > 0
           ? dataObj.refund_token
-          : typeof dataObj.refundToken === 'string'
+          : typeof dataObj.refundToken === 'string' && dataObj.refundToken.length > 0
           ? dataObj.refundToken
-          : `ref_${Date.now()}`;
+          : `${eventToken}`;
 
       const currency = typeof dataObj.currency === 'string' ? dataObj.currency.toUpperCase() : 'PKR';
-      const amountMinor = extractAmountMinor(dataObj.amount);
+      // Use documented data.refund_amount if available, fallback to data.amount
+      const rawRefundAmount = dataObj.refund_amount !== undefined ? dataObj.refund_amount : dataObj.amount;
+      const amountMinor = extractAmountMinor(rawRefundAmount);
 
       return SafepayPaymentEventSchema.parse({
         provider: 'safepay',
@@ -262,11 +340,23 @@ export class SafepayAdapter implements ISafepayAdapter {
       });
     }
 
+    // Never treat a refund request as a confirmed refund
+    if (eventType === 'refund.created' || eventType === 'refund.requested') {
+      return SafepayPaymentEventSchema.parse({
+        provider: 'safepay',
+        kind: 'ignored',
+        providerEventId: eventToken,
+        occurredAt,
+        livemode: false,
+        providerEventType: eventType.slice(0, 100),
+      });
+    }
+
     if (eventType === 'checkout.completed') {
       const providerSessionRef =
-        typeof dataObj.tracker === 'string'
+        typeof dataObj.tracker === 'string' && dataObj.tracker.length > 0
           ? dataObj.tracker
-          : typeof dataObj.token === 'string'
+          : typeof dataObj.token === 'string' && dataObj.token.length > 0
           ? dataObj.token
           : eventToken;
 
@@ -354,9 +444,17 @@ export class SafepayAdapter implements ISafepayAdapter {
         const data = (await response.json()) as Record<string, unknown>;
         const innerData = data?.data as Record<string, unknown> | undefined;
         const token =
-          (typeof innerData?.token === 'string' && innerData.token) ||
-          (typeof data?.token === 'string' && data.token) ||
-          `track_${Date.now()}`;
+          (typeof innerData?.token === 'string' && innerData.token.length > 0 && innerData.token) ||
+          (typeof data?.token === 'string' && data.token.length > 0 && data.token) ||
+          null;
+
+        if (!token) {
+          return {
+            status: 'unknown',
+            code: 'MISSING_PROVIDER_REFERENCE',
+            reconciliationReference: input.paymentRequestId,
+          };
+        }
 
         const checkoutUrl = `${this.baseUrl}/checkout/pay?beacon=${token}&order_id=${input.metadata.paymentRequestId}`;
         const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
