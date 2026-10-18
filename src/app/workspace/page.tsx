@@ -7,7 +7,7 @@ import { getAuthSession } from '@/modules/identity/service';
 export const dynamic = 'force-dynamic';
 
 export default async function WorkspacePage() {
-  const client = await createSupabaseServerClient();
+  const client = await createSupabaseServerClient({ tolerateReadOnlyCookieWriteErrors: true });
   let session;
   try {
     session = await getAuthSession(client);

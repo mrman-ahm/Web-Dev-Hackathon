@@ -15,7 +15,7 @@ export default async function WorkspaceSettingsPage({ params }: { params: Promis
   const parsedId = IdSchema.safeParse(workspaceId);
   if (!parsedId.success) notFound();
 
-  const client = await createSupabaseServerClient();
+  const client = await createSupabaseServerClient({ tolerateReadOnlyCookieWriteErrors: true });
   let user;
   let workspace;
   try {
