@@ -37,3 +37,10 @@ weaken required checks or merge around failure; escalate infrastructure blockers
 
 Template references: [GitHub issue-form syntax](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms)
 and [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+
+## Official requirements source check
+
+`python3 scripts/check_requirements.py` uses only the Python standard library to verify
+the versioned DOCX fingerprint and all 81 exact summary/acceptance rows in traceability.
+It detects omissions/duplicate IDs and missing mapping columns. This proves source
+coverage, not product acceptance or API/database correctness. CI runs it with governance.

@@ -12,8 +12,9 @@
 
 ## Administrator checklist (pending, not applied by this PR)
 
-1. Confirm human Developer 1/2 account mapping and reviewer access; populate CODEOWNERS
-   in a reviewed PR. Use both humans for sensitive/shared paths; avoid sole-author gates.
+1. Human mapping is now confirmed: `mrman-ahm` covers both lanes. Keep manual review
+   routing until independent reviewer eligibility works for human-authored PRs. Populate
+   CODEOWNERS only in a reviewed PR with a feasible mapping. Use eligible independent reviewers for sensitive/shared paths; avoid sole-author gates.
 2. Migrate the default to `main` deliberately: preserve history, retarget open PRs and
    update local tracking/docs. Until then contribute against `master`; CI supports both.
 3. Protect the actual default branch with PRs, one independent human approval, dismissed
