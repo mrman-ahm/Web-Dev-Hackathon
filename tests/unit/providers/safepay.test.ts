@@ -427,4 +427,272 @@ describe('SafepayAdapter', () => {
       }
     });
   });
+
+  describe('refundPayment - Complete Refund Lifecycle Operations', () => {
+    it('returns confirmed outcome for full refund with genuine provider refund reference', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: { message: 'success' },
+          data: {
+            token: 'rfnd_safepay_full_9988',
+            state: 'succeeded',
+            amount: 500000,
+            currency: 'PKR',
+          },
+        }),
+      });
+
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '500000', currency: 'PKR' },
+          reason: 'Customer return',
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.reference).toBe('rfnd_safepay_full_9988');
+        expect(outcome.value.providerRefundRef).toBe('rfnd_safepay_full_9988');
+        expect(outcome.value.tracker).toBe('track_order_live_9988');
+        expect(outcome.value.status).toBe('succeeded');
+        expect(outcome.value.money.amountMinor).toBe('500000');
+        expect(outcome.value.reason).toBe('Customer return');
+      }
+    });
+
+    it('returns confirmed outcome for partial refund preserving exact minor units', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: { message: 'success' },
+          data: {
+            token: 'rfnd_safepay_part_1122',
+            state: 'succeeded',
+            amount: 150000,
+            currency: 'PKR',
+          },
+        }),
+      });
+
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '150000', currency: 'PKR' },
+          reason: 'Partial discount refund',
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.providerRefundRef).toBe('rfnd_safepay_part_1122');
+        expect(outcome.value.money.amountMinor).toBe('150000');
+      }
+    });
+
+    it('never treats a pending/requested refund as confirmed refund', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: { message: 'success' },
+          data: {
+            token: 'rfnd_req_pending_3344',
+            state: 'pending',
+            amount: 500000,
+          },
+        }),
+      });
+
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '500000', currency: 'PKR' },
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('unknown');
+      if (outcome.status === 'unknown') {
+        expect(outcome.code).toBe('REFUND_PENDING_CONFIRMATION');
+        expect(outcome.reconciliationReference).toBe('rfnd_req_pending_3344');
+      }
+    });
+
+    it('rejects invalid or empty tracker with permanent_failure', async () => {
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: '   ',
+          money: { amountMinor: '500000', currency: 'PKR' },
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('INVALID_TRACKER');
+      }
+    });
+
+    it('rejects zero or negative refund amount with permanent_failure', async () => {
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '0', currency: 'PKR' },
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('INVALID_AMOUNT');
+      }
+    });
+
+    it('maps Safepay 400/409 duplicate/exceeded refund errors to permanent_failure with specific code', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({
+          error: 'ALREADY_REFUNDED',
+        }),
+      });
+
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '500000', currency: 'PKR' },
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('ALREADY_REFUNDED');
+      }
+    });
+
+    it('handles network timeouts as unknown outcome for reconciliation', async () => {
+      const abortError = new Error('The operation was aborted');
+      abortError.name = 'AbortError';
+      global.fetch = vi.fn().mockRejectedValue(abortError);
+
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '500000', currency: 'PKR' },
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('unknown');
+      if (outcome.status === 'unknown') {
+        expect(outcome.code).toBe('NETWORK_TIMEOUT');
+        expect(outcome.reconciliationReference).toBe('track_order_live_9988');
+      }
+    });
+
+    it('handles rate limit 429 with retryAfterSeconds', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'retry-after': '45' }),
+      });
+
+      const outcome = await adapter.refundPayment(
+        {
+          tracker: 'track_order_live_9988',
+          money: { amountMinor: '500000', currency: 'PKR' },
+        },
+        credentials,
+      );
+
+      expect(outcome.status).toBe('temporary_failure');
+      if (outcome.status === 'temporary_failure') {
+        expect(outcome.code).toBe('RATE_LIMIT_EXCEEDED');
+        expect(outcome.retryAfterSeconds).toBe(45);
+      }
+    });
+  });
+
+  describe('lookupPayment - Payment Reconciliation', () => {
+    it('successfully reconciles paid transaction details with minor units and metadata', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: { message: 'success' },
+          data: {
+            token: 'pay_token_confirmed_123',
+            tracker: 'track_rec_456',
+            state: 'paid',
+            amount: 750000,
+            currency: 'PKR',
+            metadata: {
+              paymentRequestId: '550e8400-e29b-41d4-a716-446655440001',
+              contactId: '550e8400-e29b-41d4-a716-446655440002',
+              opportunityId: '550e8400-e29b-41d4-a716-446655440003',
+            },
+          },
+        }),
+      });
+
+      const outcome = await adapter.lookupPayment('track_rec_456', credentials);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.tracker).toBe('track_rec_456');
+        expect(outcome.value.state).toBe('paid');
+        expect(outcome.value.money.amountMinor).toBe('750000');
+        expect(outcome.value.money.currency).toBe('PKR');
+        expect(outcome.value.providerPaymentRef).toBe('pay_token_confirmed_123');
+        expect(outcome.value.metadata?.paymentRequestId).toBe('550e8400-e29b-41d4-a716-446655440001');
+      }
+    });
+
+    it('correctly reconciles refunded transaction with amountRefundedMinor', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: { message: 'success' },
+          data: {
+            tracker: 'track_rec_refunded',
+            state: 'refunded',
+            amount: 750000,
+            refund_amount: 750000,
+            currency: 'PKR',
+          },
+        }),
+      });
+
+      const outcome = await adapter.lookupPayment('track_rec_refunded', credentials);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.state).toBe('refunded');
+        expect(outcome.value.money.amountMinor).toBe('750000');
+        expect(outcome.value.amountRefundedMinor).toBe('750000');
+      }
+    });
+
+    it('returns PAYMENT_NOT_FOUND when Safepay returns 404', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+      });
+
+      const outcome = await adapter.lookupPayment('track_unknown_nonexistent', credentials);
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('PAYMENT_NOT_FOUND');
+      }
+    });
+  });
 });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'node:crypto';
 import {
   TextbeeAdapter,
+  resolveDeliveryTransition,
   type TextbeeCredentials,
   type TextbeeRawWebhook,
 } from '../../../src/modules/messaging/adapters/textbee';
@@ -524,6 +525,223 @@ describe('TextbeeAdapter', () => {
         expect(outcome.code).toBe('NETWORK_ERROR');
         expect(outcome.reconciliationReference).toBe(sendCommand.deliveryId);
       }
+    });
+  });
+
+  describe('lookupBatch - SMS Batch Delivery Reconciliation', () => {
+    it('returns confirmed outcome with parsed messages, delivery states, and counts', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: 'success',
+          data: {
+            smsBatchId: 'batch-test-1122',
+            status: 'completed',
+            successCount: 2,
+            failureCount: 0,
+            deliveredCount: 2,
+            messages: [
+              {
+                _id: 'sms-child-001',
+                recipient: '+923001234567',
+                status: 'delivered',
+                sentAt: '2026-10-18T10:00:00.000Z',
+                deliveredAt: '2026-10-18T10:00:05.000Z',
+              },
+              {
+                _id: 'sms-child-002',
+                recipient: '+923007654321',
+                status: 'delivered',
+                sentAt: '2026-10-18T10:00:01.000Z',
+                deliveredAt: '2026-10-18T10:00:06.000Z',
+              },
+            ],
+          },
+        }),
+      });
+
+      const outcome = await adapter.lookupBatch('batch-test-1122', credentials);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.smsBatchId).toBe('batch-test-1122');
+        expect(outcome.value.status).toBe('completed');
+        expect(outcome.value.successCount).toBe(2);
+        expect(outcome.value.messages).toHaveLength(2);
+        expect(outcome.value.messages[0]?.state).toBe('delivered');
+        expect(outcome.value.messages[0]?.smsId).toBe('sms-child-001');
+      }
+    });
+
+    it('returns BATCH_NOT_FOUND when textbee returns 404', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+      });
+
+      const outcome = await adapter.lookupBatch('batch-nonexistent', credentials);
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('BATCH_NOT_FOUND');
+      }
+    });
+
+    it('returns RATE_LIMIT_EXCEEDED with retry seconds when 429 received', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'retry-after': '60' }),
+      });
+
+      const outcome = await adapter.lookupBatch('batch-test-1122', credentials);
+
+      expect(outcome.status).toBe('temporary_failure');
+      if (outcome.status === 'temporary_failure') {
+        expect(outcome.code).toBe('RATE_LIMIT_EXCEEDED');
+        expect(outcome.retryAfterSeconds).toBe(60);
+      }
+    });
+
+    it('handles network timeout with unknown outcome for reconciliation', async () => {
+      const timeoutError = new Error('The operation was aborted');
+      timeoutError.name = 'TimeoutError';
+      global.fetch = vi.fn().mockRejectedValue(timeoutError);
+
+      const outcome = await adapter.lookupBatch('batch-test-1122', credentials);
+
+      expect(outcome.status).toBe('unknown');
+      if (outcome.status === 'unknown') {
+        expect(outcome.code).toBe('NETWORK_TIMEOUT');
+        expect(outcome.reconciliationReference).toBe('batch-test-1122');
+      }
+    });
+  });
+
+  describe('lookupMessage - Individual SMS Delivery Status', () => {
+    it('returns confirmed outcome for single message lookup', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: 'success',
+          data: {
+            _id: 'sms-ind-1234',
+            smsBatchId: 'batch-test-1122',
+            deviceId: 'device-android-sim-1',
+            recipient: '+923001234567',
+            status: 'sent',
+            sentAt: '2026-10-18T10:00:00.000Z',
+          },
+        }),
+      });
+
+      const outcome = await adapter.lookupMessage('sms-ind-1234', credentials);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.smsId).toBe('sms-ind-1234');
+        expect(outcome.value.smsBatchId).toBe('batch-test-1122');
+        expect(outcome.value.state).toBe('sent');
+        expect(outcome.value.sentAt).toBe('2026-10-18T10:00:00.000Z');
+      }
+    });
+
+    it('returns MESSAGE_NOT_FOUND when single message returns 404', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+      });
+
+      const outcome = await adapter.lookupMessage('sms-unknown-xyz', credentials);
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('MESSAGE_NOT_FOUND');
+      }
+    });
+  });
+
+  describe('getDeviceStatus - Gateway Health and Availability', () => {
+    it('returns online device health status with battery and network info', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: 'success',
+          data: {
+            deviceId: 'device-android-sim-1',
+            isOnline: true,
+            batteryLevel: 88,
+            networkType: 'LTE',
+            model: 'Samsung Galaxy A14',
+            lastSeenAt: '2026-10-18T10:05:00.000Z',
+          },
+        }),
+      });
+
+      const outcome = await adapter.getDeviceStatus(credentials);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.deviceId).toBe('device-android-sim-1');
+        expect(outcome.value.isOnline).toBe(true);
+        expect(outcome.value.batteryLevel).toBe(88);
+        expect(outcome.value.networkType).toBe('LTE');
+        expect(outcome.value.model).toBe('Samsung Galaxy A14');
+      }
+    });
+
+    it('correctly reports offline device status', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: 'success',
+          data: {
+            deviceId: 'device-android-sim-1',
+            isOnline: false,
+          },
+        }),
+      });
+
+      const outcome = await adapter.getDeviceStatus(credentials);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.value.isOnline).toBe(false);
+      }
+    });
+  });
+
+  describe('resolveDeliveryTransition - Correctness & Non-Regression', () => {
+    it('never regresses from confirmed delivered to sent, pending, or unknown', () => {
+      expect(resolveDeliveryTransition('delivered', 'sent')).toBe('delivered');
+      expect(resolveDeliveryTransition('delivered', 'pending')).toBe('delivered');
+      expect(resolveDeliveryTransition('delivered', 'dispatched')).toBe('delivered');
+      expect(resolveDeliveryTransition('delivered', 'unknown')).toBe('delivered');
+    });
+
+    it('never regresses from confirmed failed to pending or dispatched', () => {
+      expect(resolveDeliveryTransition('failed', 'pending')).toBe('failed');
+      expect(resolveDeliveryTransition('failed', 'dispatched')).toBe('failed');
+      expect(resolveDeliveryTransition('failed', 'unknown')).toBe('failed');
+    });
+
+    it('advances pending to sent and delivered', () => {
+      expect(resolveDeliveryTransition('pending', 'sent')).toBe('sent');
+      expect(resolveDeliveryTransition('pending', 'delivered')).toBe('delivered');
+      expect(resolveDeliveryTransition('pending', 'failed')).toBe('failed');
+    });
+
+    it('does not let incoming unknown overwrite confirmed sent', () => {
+      expect(resolveDeliveryTransition('sent', 'unknown')).toBe('sent');
+    });
+
+    it('allows unknown state to advance to confirmed sent or delivered', () => {
+      expect(resolveDeliveryTransition('unknown', 'sent')).toBe('sent');
+      expect(resolveDeliveryTransition('unknown', 'delivered')).toBe('delivered');
     });
   });
 });

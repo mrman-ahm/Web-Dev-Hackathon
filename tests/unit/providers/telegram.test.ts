@@ -217,4 +217,114 @@ describe('TelegramAdapter', () => {
       expect(stringified).not.toContain(token);
     });
   });
+
+  describe('verifyBotConnection - Bot Authentication and Identity Verification', () => {
+    it('successfully verifies connection and returns bot identity metadata', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          result: {
+            id: 123456789,
+            is_bot: true,
+            first_name: 'CRM Escalation Bot',
+            username: 'crm_escalation_bot',
+            can_join_groups: true,
+          },
+        }),
+      });
+
+      const outcome = await adapter.verifyBotConnection(token);
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.reference).toBe('123456789');
+        expect(outcome.value.botId).toBe(123456789);
+        expect(outcome.value.botUsername).toBe('crm_escalation_bot');
+        expect(outcome.value.firstName).toBe('CRM Escalation Bot');
+        expect(outcome.value.canJoinGroups).toBe(true);
+      }
+    });
+
+    it('returns AUTHENTICATION_FAILED on 401 unauthorized with token redacted', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+        json: async () => ({
+          ok: false,
+          error_code: 401,
+          description: 'Unauthorized',
+        }),
+      });
+
+      const outcome = await adapter.verifyBotConnection(token);
+
+      expect(outcome.status).toBe('permanent_failure');
+      if (outcome.status === 'permanent_failure') {
+        expect(outcome.code).toBe('AUTHENTICATION_FAILED');
+      }
+      expect(JSON.stringify(outcome)).not.toContain(token);
+    });
+
+    it('handles network timeout with unknown outcome', async () => {
+      const abortError = new Error('The operation was aborted');
+      abortError.name = 'AbortError';
+      global.fetch = vi.fn().mockRejectedValue(abortError);
+
+      const outcome = await adapter.verifyBotConnection(token);
+
+      expect(outcome.status).toBe('unknown');
+      if (outcome.status === 'unknown') {
+        expect(outcome.code).toBe('NETWORK_TIMEOUT');
+      }
+    });
+  });
+
+  describe('sendEscalationNotification - Lead Escalation Alert Formatting', () => {
+    it('formats HTML escalation message with lead link and escapes sensitive characters', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          result: {
+            message_id: 998877,
+          },
+        }),
+      });
+      global.fetch = mockFetch;
+
+      const outcome = await adapter.sendEscalationNotification(
+        {
+          deliveryId: '550e8400-e29b-41d4-a716-446655440001',
+          chatId: '-1001234567890',
+          leadId: '550e8400-e29b-41d4-a716-446655440002',
+          leadName: 'Ali & Sons <Pvt> Ltd',
+          leadCompany: 'Falcon Tech',
+          reason: 'Acknowledgement overdue by 15 minutes',
+          leadUrl: 'https://crm.example.com/leads/550e8400-e29b-41d4-a716-446655440002',
+        },
+        token,
+      );
+
+      expect(outcome.status).toBe('confirmed');
+      if (outcome.status === 'confirmed') {
+        expect(outcome.reference).toBe('998877');
+        expect(outcome.value.messageId).toBe('998877');
+      }
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [, options] = mockFetch.mock.calls[0] as [string, { body: string }];
+      const parsedBody = JSON.parse(options.body);
+
+      // Verify HTML escaping and link presence
+      expect(parsedBody.text).toContain('Ali &amp; Sons &lt;Pvt&gt; Ltd');
+      expect(parsedBody.text).toContain('(Falcon Tech)');
+      expect(parsedBody.text).toContain('Acknowledgement overdue by 15 minutes');
+      expect(parsedBody.text).toContain(
+        '<a href="https://crm.example.com/leads/550e8400-e29b-41d4-a716-446655440002">View Escalated Lead</a>',
+      );
+    });
+  });
 });

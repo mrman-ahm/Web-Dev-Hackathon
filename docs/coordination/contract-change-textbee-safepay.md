@@ -71,13 +71,64 @@ export const TextbeeMessageEventSchema = z.discriminatedUnion('kind', [
 ]);
 export type TextbeeMessageEvent = z.infer<typeof TextbeeMessageEventSchema>;
 
+export type TextbeeDeliveryState = 'pending' | 'dispatched' | 'sent' | 'delivered' | 'failed' | 'unknown';
+
+export interface TextbeeBatchRecipientStatus {
+  smsId: string;
+  recipient: string;
+  state: TextbeeDeliveryState;
+  errorCode: string | null;
+  errorMessage?: string | null;
+  requestedAt?: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  failedAt?: string;
+}
+
+export interface TextbeeBatchStatus {
+  smsBatchId: string;
+  deviceId: string;
+  status: 'pending' | 'processing' | 'completed' | 'partial_success' | 'failed' | 'unknown';
+  successCount: number;
+  failureCount: number;
+  pendingCount?: number;
+  deliveredCount?: number;
+  messages: TextbeeBatchRecipientStatus[];
+  estimatedCompletionAt?: string;
+}
+
+export interface TextbeeMessageStatus {
+  smsId: string;
+  smsBatchId?: string;
+  deviceId: string;
+  recipient: string;
+  state: TextbeeDeliveryState;
+  errorCode: string | null;
+  errorMessage?: string | null;
+  sentAt?: string;
+  deliveredAt?: string;
+  failedAt?: string;
+}
+
+export interface TextbeeDeviceStatus {
+  deviceId: string;
+  isOnline: boolean;
+  batteryLevel?: number;
+  networkType?: string;
+  model?: string;
+  lastSeenAt?: string;
+}
+
 export interface TextbeeMessagingAdapter {
   verifyInbound(input: RawWebhook, credentials: TextbeeCredentials): TextbeeMessageEvent;
   send(input: SendMessageCommand, credentials: TextbeeCredentials): Promise<ProviderOutcome<SentMessage>>;
+  lookupBatch(smsBatchId: string, credentials: TextbeeCredentials): Promise<ProviderOutcome<TextbeeBatchStatus>>;
+  lookupMessage(smsId: string, credentials: TextbeeCredentials): Promise<ProviderOutcome<TextbeeMessageStatus>>;
+  getDeviceStatus(credentials: TextbeeCredentials): Promise<ProviderOutcome<TextbeeDeviceStatus>>;
 }
 ```
 
-*(Note: `VerifiedMessageEvent` can be generalized as `TwilioMessageEvent | TextbeeMessageEvent` or unified into a provider-neutral schema).*
+*(Note: `resolveDeliveryTransition(current: TextbeeDeliveryState, incoming: TextbeeDeliveryState): TextbeeDeliveryState` is exported to enforce delivery state invariants and prevent regression from terminal states).*
 
 #### B. Safepay Credentials & Schemas
 
@@ -142,9 +193,63 @@ export const SafepayPaymentEventSchema = z.discriminatedUnion('kind', [
 ]);
 export type SafepayPaymentEvent = z.infer<typeof SafepayPaymentEventSchema>;
 
+export interface RefundCommand {
+  tracker: string;
+  money: Money;
+  reason?: string;
+  idempotencyKey?: string;
+}
+
+export interface RefundResult {
+  providerRefundRef: string;
+  tracker: string;
+  status: 'succeeded' | 'pending';
+  money: Money;
+  reason?: string;
+}
+
+export interface ReconciledPayment {
+  tracker: string;
+  state: 'paid' | 'unpaid' | 'failed' | 'refunded' | 'partially_refunded' | 'unknown';
+  money: Money;
+  amountRefundedMinor?: string;
+  providerPaymentRef?: string | null;
+  metadata?: CheckoutMetadata | null;
+  rawStatus?: string;
+}
+
 export interface SafepayPaymentsAdapter {
   verifyWebhook(input: RawWebhook, credentials: SafepayCredentials): SafepayPaymentEvent;
   createCheckout(input: CheckoutCommand, credentials: SafepayCredentials): Promise<ProviderOutcome<CheckoutSession>>;
+  refundPayment(input: RefundCommand, credentials: SafepayCredentials): Promise<ProviderOutcome<RefundResult>>;
+  lookupPayment(tracker: string, credentials: SafepayCredentials): Promise<ProviderOutcome<ReconciledPayment>>;
+}
+```
+
+#### C. Telegram Escalation Notification Helpers
+
+```typescript
+export interface TelegramBotInfo {
+  botId: number;
+  botUsername: string;
+  firstName: string;
+  canJoinGroups: boolean;
+}
+
+export interface EscalationNotificationInput {
+  deliveryId: string;
+  chatId: string;
+  leadId: string;
+  leadName: string;
+  leadCompany?: string | null;
+  reason: string;
+  leadUrl: string;
+}
+
+export interface TelegramNotificationAdapter {
+  send(input: NotificationCommand, token: string): Promise<ProviderOutcome<NotificationSent>>;
+  verifyBotConnection(token: string): Promise<ProviderOutcome<TelegramBotInfo>>;
+  sendEscalationNotification(input: EscalationNotificationInput, token: string): Promise<ProviderOutcome<NotificationSent>>;
 }
 ```
 
